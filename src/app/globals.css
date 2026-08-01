@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   GeefSterren design tokens.
+
+   Taken one-to-one from the design handoff (`tokens/*.css`). The base ramps
+   exist so the palette can be retuned once; product code must reference the
+   semantic aliases, never a ramp step directly.
+   =========================================================================== */
+
+:root {
+  /* --- Amber: the star, the rating, the action. Never body text. --------- */
+  --gs-amber-50: #fef6e7;
+  --gs-amber-100: #fdebc9;
+  --gs-amber-200: #fbd68f;
+  --gs-amber-300: #f8c05a;
+  --gs-amber-400: #f2a93b;
+  --gs-amber-500: #e4931f;
+  --gs-amber-600: #c77a0f;
+  --gs-amber-700: #9e5d0a;
+  --gs-amber-800: #7a4708;
+
+  /* --- Ink: warm dark blue. Text, dark surfaces, sidebar. --------------- */
+  --gs-ink-950: #0e1b28;
+  --gs-ink-900: #142334;
+  --gs-ink-800: #1e3348;
+  --gs-ink-700: #2c4661;
+  --gs-ink-600: #3b5872;
+  --gs-ink-500: #4a6580;
+  --gs-ink-400: #5a7288;
+  --gs-ink-300: #8fa2b4;
+  --gs-ink-200: #bfcbd6;
+
+  /* --- Cream: warm neutrals. Cold grey does not exist in this system. --- */
+  --gs-cream-50: #fdfbf7;
+  --gs-cream-100: #f9f5ed;
+  --gs-cream-200: #f1ebdf;
+  --gs-cream-300: #e8e0d2;
+  --gs-cream-400: #d8cdb9;
+
+  --gs-green-50: #eaf5ee;
+  --gs-green-100: #d3e9dc;
+  --gs-green-500: #2f8a5f;
+  --gs-green-600: #24704c;
+  --gs-green-700: #1b5a3c;
+
+  --gs-coral-50: #fceeeb;
+  --gs-coral-100: #f8dbd5;
+  --gs-coral-500: #c0503f;
+  --gs-coral-600: #a8402f;
+  --gs-coral-700: #8f2e22;
+
+  --gs-blue-50: #eaf2f7;
+  --gs-blue-100: #d6e5ef;
+  --gs-blue-600: #2a6e92;
+  --gs-blue-700: #205877;
+
+  --gs-clay-500: #c0632b;
+  --gs-clay-600: #a85220;
+  --gs-olive-500: #7a9a3c;
+  --gs-olive-600: #647f2f;
+
+  /* --- Semantic: brand -------------------------------------------------- */
+  --color-brand-primary: var(--gs-amber-400);
+  --color-brand-primary-hover: var(--gs-amber-500);
+  --color-brand-primary-active: var(--gs-amber-600);
+  /* Text on amber is ink, never white. White on amber fails contrast. */
+  --color-brand-primary-ink: var(--gs-ink-900);
+  --color-brand-secondary: var(--gs-ink-900);
+  --color-brand-secondary-hover: var(--gs-ink-800);
+  --color-brand-accent: var(--gs-green-600);
+  --color-brand-on-dark: var(--gs-cream-50);
+
+  /* --- Semantic: surfaces ---------------------------------------------- */
+  --color-background: var(--gs-cream-100);
+  --color-background-alt: var(--gs-cream-50);
+  --color-surface: #ffffff;
+  --color-surface-muted: var(--gs-cream-200);
+  --color-surface-inverse: var(--gs-ink-900);
+  --color-surface-brand-soft: var(--gs-amber-50);
+  --color-border: var(--gs-cream-300);
+  --color-border-strong: var(--gs-cream-400);
+  --color-border-inverse: rgba(253, 251, 247, 0.16);
+  --color-overlay: rgba(14, 27, 40, 0.52);
+
+  /* --- Semantic: text --------------------------------------------------- */
+  --color-text-primary: var(--gs-ink-900);
+  --color-text-secondary: var(--gs-ink-500);
+  --color-text-muted: var(--gs-ink-400); /* lightest legal text */
+  --color-text-inverse: var(--gs-cream-50);
+  --color-text-inverse-muted: rgba(253, 251, 247, 0.72);
+  --color-text-brand: var(--gs-amber-700); /* the only amber that may be text */
+  --color-text-link: var(--gs-blue-700);
+  --color-text-link-hover: var(--gs-ink-900);
+
+  /* --- Semantic: status ------------------------------------------------- */
+  --color-success: var(--gs-green-600);
+  --color-success-soft: var(--gs-green-50);
+  --color-success-text: var(--gs-green-700);
+  --color-warning: var(--gs-amber-600);
+  --color-warning-soft: var(--gs-amber-50);
+  --color-warning-text: var(--gs-amber-800);
+  --color-error: var(--gs-coral-600);
+  --color-error-soft: var(--gs-coral-50);
+  --color-error-text: var(--gs-coral-700);
+  --color-info: var(--gs-blue-600);
+  --color-info-soft: var(--gs-blue-50);
+  --color-info-text: var(--gs-blue-700);
+
+  /* --- Semantic: rating -------------------------------------------------
+     Colour is the THIRD signal, after fill count and the numeral + label.
+     rating-3 is 2.47:1 on white: a fill, never text, never a lone icon. */
+  --color-rating-1: var(--gs-coral-600);
+  --color-rating-2: var(--gs-clay-500);
+  --color-rating-3: var(--gs-amber-500);
+  --color-rating-4: var(--gs-olive-500);
+  --color-rating-5: var(--gs-green-600);
+  --color-rating-empty: var(--gs-cream-400);
+  --color-rating-star: var(--gs-amber-400);
+  --color-rating-star-empty: var(--gs-cream-300);
+
+  /* --- Semantic: charts. Never more than four series in an MVP chart. --- */
+  --color-chart-1: var(--gs-amber-500);
+  --color-chart-2: var(--gs-ink-700);
+  --color-chart-3: var(--gs-blue-600);
+  --color-chart-4: var(--gs-green-600);
+  --color-chart-grid: var(--gs-cream-300);
+  --color-chart-axis: var(--gs-ink-400);
+  --color-chart-band: var(--gs-cream-200);
+
+  --color-focus-ring: var(--gs-ink-900);
+  --color-focus-halo: rgba(242, 169, 59, 0.55);
+
+  /* --- Elevation. Ink at 6–10%, never neutral grey. --------------------- */
+  --shadow-xs: 0 1px 2px rgba(14, 27, 40, 0.06);
+  --shadow-sm: 0 1px 3px rgba(14, 27, 40, 0.07), 0 1px 2px rgba(14, 27, 40, 0.04);
+  --shadow-md: 0 4px 12px rgba(14, 27, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(14, 27, 40, 0.1);
+  --shadow-focus: 0 0 0 3px var(--color-focus-halo);
+
+  /* --- Motion. Short, single easing, no bounce. ------------------------- */
+  --duration-instant: 80ms;
+  --duration-fast: 140ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-rating: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* ===========================================================================
+   Tailwind theme mapping.
+
+   Exposes the tokens above as utilities (`bg-surface`, `text-muted`,
+   `rounded-card`, …). Utilities read from the semantic aliases, so a palette
+   change happens in one place.
+   =========================================================================== */
+
+@theme inline {
+  --font-display: var(--font-jakarta), "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale. 16px is the mobile body floor; 14 is dense portal UI only. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.375rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  --tracking-tight: -0.022em;
+  --tracking-snug: -0.012em;
+  --tracking-widest: 0.08em;
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.22;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.62;
+
+  /* Colours */
+  --color-amber-50: var(--gs-amber-50);
+  --color-amber-100: var(--gs-amber-100);
+  --color-amber-200: var(--gs-amber-200);
+  --color-amber-300: var(--gs-amber-300);
+  --color-amber-400: var(--gs-amber-400);
+  --color-amber-500: var(--gs-amber-500);
+  --color-amber-600: var(--gs-amber-600);
+  --color-amber-700: var(--gs-amber-700);
+  --color-amber-800: var(--gs-amber-800);
+
+  --color-ink-950: var(--gs-ink-950);
+  --color-ink-900: var(--gs-ink-900);
+  --color-ink-800: var(--gs-ink-800);
+  --color-ink-700: var(--gs-ink-700);
+  --color-ink-600: var(--gs-ink-600);
+  --color-ink-500: var(--gs-ink-500);
+  --color-ink-400: var(--gs-ink-400);
+  --color-ink-300: var(--gs-ink-300);
+  --color-ink-200: var(--gs-ink-200);
+
+  --color-cream-50: var(--gs-cream-50);
+  --color-cream-100: var(--gs-cream-100);
+  --color-cream-200: var(--gs-cream-200);
+  --color-cream-300: var(--gs-cream-300);
+  --color-cream-400: var(--gs-cream-400);
+
+  --color-green-50: var(--gs-green-50);
+  --color-green-100: var(--gs-green-100);
+  --color-green-500: var(--gs-green-500);
+  --color-green-600: var(--gs-green-600);
+  --color-green-700: var(--gs-green-700);
+
+  --color-coral-50: var(--gs-coral-50);
+  --color-coral-100: var(--gs-coral-100);
+  --color-coral-500: var(--gs-coral-500);
+  --color-coral-600: var(--gs-coral-600);
+  --color-coral-700: var(--gs-coral-700);
+
+  --color-blue-50: var(--gs-blue-50);
+  --color-blue-100: var(--gs-blue-100);
+  --color-blue-600: var(--gs-blue-600);
+  --color-blue-700: var(--gs-blue-700);
+
+  /*
+   * Semantic aliases as utilities.
+   *
+   * These must resolve to a *ramp* variable, not to the same-named semantic
+   * token. `@theme` re-emits each entry into `:root`, so writing
+   * `--color-surface: var(--color-surface)` produces a self-reference that CSS
+   * discards — the variable silently becomes unset and every
+   * `bg-[var(--color-surface)]` in the app loses its colour.
+   */
+  --color-background: var(--gs-cream-100);
+  --color-surface: #ffffff;
+  --color-surface-muted: var(--gs-cream-200);
+  --color-surface-inverse: var(--gs-ink-900);
+  --color-surface-brand: var(--gs-amber-50);
+  --color-line: var(--color-border);
+  --color-line-strong: var(--color-border-strong);
+  --color-content: var(--color-text-primary);
+  --color-content-secondary: var(--color-text-secondary);
+  --color-content-muted: var(--color-text-muted);
+  --color-content-inverse: var(--color-text-inverse);
+  --color-content-brand: var(--color-text-brand);
+  --color-link: var(--color-text-link);
+
+  /* Radius. Buttons and inputs 10, cards 14, modals 20. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  /*
+   * Shadows are deliberately not re-declared here. They are defined once in
+   * `:root` above and consumed as `shadow-[var(--shadow-md)]`. Restating them
+   * in `@theme` under the same names would create the same self-reference trap
+   * as the colours above.
+   */
+
+  --spacing-control-sm: 2.25rem;
+  --spacing-control-md: 2.75rem;
+  --spacing-control-lg: 3.25rem;
+  --spacing-sidebar: 16rem;
+  --spacing-mobile: 26.25rem;
+  --spacing-portal: 82.5rem;
+}
+
+/* ===========================================================================
+   Base
+   =========================================================================== */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* The system is light-only by design: cream surfaces and ink text are the
+     brand, and a dark inversion would need its own token set rather than an
+     automatic flip. The sidebar is the only intentional inversion. */
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), "Segoe UI", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every number is tabular so columns of figures line up and a changing metric
+   does not shift its neighbours. */
+.tabular,
+th,
+td {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/*
+ * Focus. `outline: none` is forbidden by the design system — a 2px ink outline
+ * at 2px offset is the baseline, and form controls add the 3px amber halo on
+ * top of it.
+ */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

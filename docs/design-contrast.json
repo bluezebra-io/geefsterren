@@ -1,0 +1,272 @@
+[
+ {
+  "fg": "--color-text-primary",
+  "fgHex": "#142334",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Body copy on the app background",
+  "requirement": "text",
+  "ratio": 14.63,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-text-primary",
+  "fgHex": "#142334",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Body copy on cards",
+  "requirement": "text",
+  "ratio": 15.91,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-text-secondary",
+  "fgHex": "#4A6580",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Supporting copy, helper text",
+  "requirement": "text",
+  "ratio": 5.57,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-text-secondary",
+  "fgHex": "#4A6580",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Supporting copy on cards",
+  "requirement": "text",
+  "ratio": 6.06,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-text-muted",
+  "fgHex": "#5A7288",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Captions, timestamps — lightest legal text",
+  "requirement": "text",
+  "ratio": 4.6,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-text-muted",
+  "fgHex": "#5A7288",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Captions on cards",
+  "requirement": "text",
+  "ratio": 5,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-text-brand",
+  "fgHex": "#9E5D0A",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Amber used as text (only this shade)",
+  "requirement": "text",
+  "ratio": 4.8,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-text-link",
+  "fgHex": "#205877",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Inline links",
+  "requirement": "text",
+  "ratio": 7.09,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-brand-primary-ink",
+  "fgHex": "#142334",
+  "bg": "--color-brand-primary",
+  "bgHex": "#F2A93B",
+  "use": "Label on the amber primary button",
+  "requirement": "text",
+  "ratio": 7.97,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-text-primary",
+  "fgHex": "#142334",
+  "bg": "--color-surface-muted",
+  "bgHex": "#F1EBDF",
+  "use": "Text on muted rows / table headers",
+  "requirement": "text",
+  "ratio": 13.4,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-text-inverse",
+  "fgHex": "#FDFBF7",
+  "bg": "--color-brand-secondary",
+  "bgHex": "#142334",
+  "use": "Text on ink surfaces (sidebar, footer)",
+  "requirement": "text",
+  "ratio": 15.4,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-brand-primary",
+  "fgHex": "#F2A93B",
+  "bg": "--color-brand-secondary",
+  "bgHex": "#142334",
+  "use": "Amber accent on ink",
+  "requirement": "text",
+  "ratio": 7.97,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-success-text",
+  "fgHex": "#1B5A3C",
+  "bg": "--color-success-soft",
+  "bgHex": "#EAF5EE",
+  "use": "Success alert copy",
+  "requirement": "text",
+  "ratio": 7.3,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-error-text",
+  "fgHex": "#8F2E22",
+  "bg": "--color-error-soft",
+  "bgHex": "#FCEEEB",
+  "use": "Error alert copy",
+  "requirement": "text",
+  "ratio": 7.19,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "#7A4708 (amber-800)",
+  "fgHex": "#7A4708",
+  "bg": "--color-warning-soft",
+  "bgHex": "#FEF6E7",
+  "use": "Warning alert copy",
+  "requirement": "text",
+  "ratio": 7.16,
+  "verdict": "AA + AAA"
+ },
+ {
+  "fg": "--color-info-text",
+  "fgHex": "#205877",
+  "bg": "--color-info-soft",
+  "bgHex": "#EAF2F7",
+  "use": "Information alert copy",
+  "requirement": "text",
+  "ratio": 6.81,
+  "verdict": "AA"
+ },
+ {
+  "fg": "#FFFFFF",
+  "fgHex": "#FFFFFF",
+  "bg": "--color-success",
+  "bgHex": "#24704C",
+  "use": "Text on solid success",
+  "requirement": "text",
+  "ratio": 6.01,
+  "verdict": "AA"
+ },
+ {
+  "fg": "#FFFFFF",
+  "fgHex": "#FFFFFF",
+  "bg": "--color-error",
+  "bgHex": "#A8402F",
+  "use": "Text on solid error",
+  "requirement": "text",
+  "ratio": 6.11,
+  "verdict": "AA"
+ },
+ {
+  "fg": "--color-border",
+  "fgHex": "#E8E0D2",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Card border vs card fill",
+  "requirement": "ui",
+  "ratio": 1.31,
+  "verdict": "below 3:1 — pair with border/label"
+ },
+ {
+  "fg": "--color-border-strong",
+  "fgHex": "#D8CDB9",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Input border vs page",
+  "requirement": "ui",
+  "ratio": 1.45,
+  "verdict": "below 3:1 — pair with border/label"
+ },
+ {
+  "fg": "--color-rating-1",
+  "fgHex": "#A8402F",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Rating 1 fill",
+  "requirement": "ui",
+  "ratio": 6.11,
+  "verdict": "AA non-text"
+ },
+ {
+  "fg": "--color-rating-2",
+  "fgHex": "#C0632B",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Rating 2 fill",
+  "requirement": "ui",
+  "ratio": 4.15,
+  "verdict": "AA non-text"
+ },
+ {
+  "fg": "--color-rating-3",
+  "fgHex": "#E4931F",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Rating 3 fill",
+  "requirement": "ui",
+  "ratio": 2.47,
+  "verdict": "below 3:1 — pair with border/label"
+ },
+ {
+  "fg": "--color-rating-4",
+  "fgHex": "#7A9A3C",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Rating 4 fill",
+  "requirement": "ui",
+  "ratio": 3.22,
+  "verdict": "AA non-text"
+ },
+ {
+  "fg": "--color-rating-5",
+  "fgHex": "#24704C",
+  "bg": "--color-surface",
+  "bgHex": "#FFFFFF",
+  "use": "Rating 5 fill",
+  "requirement": "ui",
+  "ratio": 6.01,
+  "verdict": "AA non-text"
+ },
+ {
+  "fg": "--color-rating-star",
+  "fgHex": "#F2A93B",
+  "bg": "--color-rating-star-empty",
+  "bgHex": "#E8E0D2",
+  "use": "Filled vs empty star",
+  "requirement": "ui",
+  "ratio": 1.52,
+  "verdict": "below 3:1 — pair with border/label"
+ },
+ {
+  "fg": "--gs-ink-300",
+  "fgHex": "#8FA2B4",
+  "bg": "--color-background",
+  "bgHex": "#F9F5ED",
+  "use": "Decorative only — never text",
+  "requirement": "none",
+  "ratio": 2.42,
+  "verdict": "n/a (decor)"
+ }
+]
