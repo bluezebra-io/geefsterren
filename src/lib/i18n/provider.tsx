@@ -3,44 +3,70 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 import type { Locale } from './config';
-import type { Messages } from './messages/en';
+import type { PortalMessages, PublicMessages } from './scope';
 
 /**
- * Makes the request's message catalogue available to Client Components.
+ * Makes a request's message catalogue available to Client Components.
  *
  * Server Components read messages directly via `getMessages()`. Client
  * Components cannot, so a server layout resolves the catalogue once and passes
- * it across the boundary here — a plain serialisable object, no duplicated
- * fetch and no prop drilling through every form.
+ * it across the boundary here.
+ *
+ * There are two scopes rather than one, because anything passed across the
+ * boundary is serialised into the HTML: the public site must not ship the
+ * portal's strings. See `scope.ts`.
  */
 
-type I18nValue = { locale: Locale; messages: Messages };
+type Scope<T> = { locale: Locale; messages: T };
 
-const I18nContext = createContext<I18nValue | null>(null);
+function createScope<T>(name: string) {
+  const Context = createContext<Scope<T> | null>(null);
 
-export function I18nProvider({
-  locale,
-  messages,
-  children,
-}: {
-  locale: Locale;
-  messages: Messages;
-  children: ReactNode;
-}) {
-  return <I18nContext.Provider value={{ locale, messages }}>{children}</I18nContext.Provider>;
-}
-
-export function useI18n(): I18nValue {
-  const value = useContext(I18nContext);
-  if (!value) {
-    throw new Error('useI18n must be used inside an I18nProvider');
+  function Provider({
+    locale,
+    messages,
+    children,
+  }: {
+    locale: Locale;
+    messages: T;
+    children: ReactNode;
+  }) {
+    return <Context.Provider value={{ locale, messages }}>{children}</Context.Provider>;
   }
-  return value;
+
+  function useScope(): Scope<T> {
+    const value = useContext(Context);
+    if (!value) {
+      throw new Error(`use${name}Messages must be used inside ${name}I18nProvider`);
+    }
+    return value;
+  }
+
+  return { Provider, useScope };
 }
 
-/** Convenience hook for the common case of only needing the catalogue. */
-export function useMessages(): Messages {
-  return useI18n().messages;
+const publicScope = createScope<PublicMessages>('Public');
+const portalScope = createScope<PortalMessages>('Portal');
+
+export const PublicI18nProvider = publicScope.Provider;
+export const PortalI18nProvider = portalScope.Provider;
+
+/** For Client Components on the marketing site and the guest flow. */
+export function usePublicMessages(): PublicMessages {
+  return publicScope.useScope().messages;
+}
+
+/** For Client Components in the portal and the auth screens. */
+export function usePortalMessages(): PortalMessages {
+  return portalScope.useScope().messages;
+}
+
+export function usePublicLocale(): Locale {
+  return publicScope.useScope().locale;
+}
+
+export function usePortalLocale(): Locale {
+  return portalScope.useScope().locale;
 }
 
 /** Client-side counterpart of `format()` in `locale.ts`. */

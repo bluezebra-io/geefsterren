@@ -3,8 +3,8 @@ import { Users } from 'lucide-react';
 import { InviteMemberForm } from '@/components/portal/invite-member-form';
 import { MemberRow } from '@/components/portal/member-row';
 import { Alert, Card, CardBody, CardHeader, CardTitle, EmptyState } from '@/components/ui';
-import { getPortalActor } from '@/features/auth/queries';
-import { canManageMembers, defaultOrganizationId } from '@/features/auth/service';
+import { getPortalContext } from '@/features/auth/organization-context';
+import { canManageMembers } from '@/features/auth/service';
 import { listLocations } from '@/features/locations/queries';
 import { listOrganizationMembers } from '@/features/memberships/queries';
 import { getMessages } from '@/lib/i18n/locale';
@@ -12,8 +12,7 @@ import { getMessages } from '@/lib/i18n/locale';
 export const metadata = { title: 'Users — GeefSterren' };
 
 export default async function UsersPage() {
-  const [actor, t] = await Promise.all([getPortalActor(), getMessages()]);
-  const organizationId = actor ? defaultOrganizationId(actor) : null;
+  const [{ actor, organizationId }, t] = await Promise.all([getPortalContext(), getMessages()]);
 
   if (!actor || !organizationId) {
     return <EmptyState title={t.overview.noOrganization} />;

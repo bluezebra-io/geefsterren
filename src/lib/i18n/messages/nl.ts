@@ -182,23 +182,92 @@ export const nl: Messages = {
     invalidRequest: 'Ongeldig verzoek',
   },
 
+  platform: {
+    title: 'Platform',
+    subtitle: 'Alle organisaties op het platform. Open er een om erin te werken.',
+    organizations: 'Organisaties',
+    empty: 'Nog geen organisaties',
+    open: 'Openen',
+    current: 'Nu geopend',
+    locations: 'vestigingen',
+    members: 'teamleden',
+    contextBanner: 'Je bekijkt {organization} als platformmedewerker. Je bent geen lid van deze organisatie.',
+    contextExit: 'Deelnemer sluiten',
+    readOnlyHint: 'Platformondersteuning heeft alleen leesrechten.',
+    adminLink: 'Platform',
+    pickOrganization: 'Kies een organisatie om te beginnen.',
+  },
+
   marketing: {
+    // Hero
+    heroEyebrow: 'Feedback voor lokale bedrijven',
+    heroNoCode: 'Geen code? Scan de QR-code van het bedrijf.',
+
+    mockLocationName: 'Restaurant De Haven',
+    mockLocationMeta: 'Leiden \u00b7 Bezorging',
+    mockRatingQuestion: 'Hoe beoordeel je jouw ervaring?',
+    mockScaleLow: '1 Zeer slecht',
+    mockScaleHigh: '5 Uitstekend',
+    mockFollowUpQuestion: 'Waar kunnen we verbeteren?',
+    mockTopic1: 'Bezorgtijd',
+    mockTopic2: 'Temperatuur',
+    mockTopic3: 'Smaak',
+    mockTopic4: 'Verpakking',
+    mockNext: 'Volgende',
+
+    navHowItWorks: 'Hoe het werkt',
+    navImprovements: 'Verbeteringen',
+
     heroTitle: 'Geef feedback. Help jouw lokale bedrijf verbeteren.',
     heroBody:
-      'Scan de code die je kreeg, beantwoord een paar korte vragen, en het bedrijf weet wat er beter kan. Het kost ongeveer een minuut.',
+      'Deel in een paar korte stappen hoe je bezoek, bestelling of bezorging is verlopen. Jouw ervaring laat een bedrijf zien wat goed gaat en wat beter kan.',
     heroCta: 'Bekijk hoe het werkt',
     forBusinesses: 'Voor bedrijven',
     signInLink: 'Inloggen',
+
+    codeLabel: 'Heb je een feedbackcode?',
+    codePlaceholder: 'Bijvoorbeeld: HAVEN24',
+    codeSubmit: 'Doorgaan',
+    codeHelp:
+      'Je vindt de QR-code of feedbackcode op de verpakking, kassabon, tafelkaart of flyer van het bedrijf.',
+    codeError: 'Deze code is niet geldig of niet meer actief',
+
     stepsTitle: 'Zo helpt jouw feedback',
     step1Title: 'Deel je ervaring',
     step1Body: 'Een paar korte vragen over wat je bestelde of waar je was.',
     step2Title: 'Feedback wordt inzicht',
-    step2Body: 'Antwoorden van alle gasten worden samengevoegd tot thema’s, niet losse meningen.',
+    step2Body: 'Antwoorden van alle gasten worden samengevoegd tot thema\u2019s, niet losse meningen.',
     step3Title: 'Het bedrijf verbetert',
     step3Body: 'De vestiging ziet wat terugkeert en bepaalt wat er als eerste verandert.',
     step4Title: 'Resultaat wordt zichtbaar',
     step4Body: 'Verbeteringen worden gepubliceerd, zodat je ziet wat jouw feedback veranderde.',
-    privateTitle: 'Standaard privé',
+
+    changeEyebrow: 'Wat er verandert',
+    changeTitle: 'Dit verandert er dankzij klantfeedback',
+    changeExample: 'Voorbeeld \u00b7 demonstratiedata',
+    changeCaseTitle: 'Bezorgrestaurant, 84 reacties',
+    changeCaseHeard: 'Wat klanten aangaven',
+    changeCaseHeardBody:
+      'Warme gerechten koelden tijdens de bezorging soms te veel af, vooral op langere routes.',
+    changeCaseDid: 'Wat de vestiging deed',
+    changeCaseDidBody:
+      'Sinds 14 juli gebruikt deze vestiging isolerende verpakkingen en gaan de warmste gerechten als laatste mee.',
+    changeMetric1: 'Score voor temperatuur',
+    changeMetric1Note: 'Gemeten over 84 reacties, 90 dagen voor en na 14 juli',
+    changeMetric2: 'Bestellingen op tijd',
+    changeMetric2Note: 'Gemeten over 84 reacties, 90 dagen voor en na 14 juli',
+    changeMetric3: 'Reacties met een klacht over verpakking',
+    changeMetric3Note: 'Gemeten over 84 reacties, 90 dagen voor en na 14 juli',
+
+    listeningTitle: 'Lokale bedrijven die luisteren',
+    listeningBody:
+      'Waar klanten om vroegen, en wat er daardoor veranderde. Geen scores, geen ranglijst.',
+    listeningEmpty: 'Nog geen gepubliceerde verbeteringen',
+    listeningEmptyBody:
+      'Bedrijven publiceren hier hun verbeteringen zodra ze genoeg feedback hebben verzameld.',
+
+    whyTitle: 'Waarom jouw mening verschil maakt',
+    privateTitle: 'Standaard priv\u00e9',
     privateBody:
       'Je feedback gaat naar het bedrijf, niet naar het internet. Je antwoordt eerlijk omdat het een gesprek is, geen optreden.',
     adaptiveTitle: 'Vragen die meebewegen',
@@ -207,8 +276,38 @@ export const nl: Messages = {
     reviewsTitle: 'Reviews, eerst verdiend',
     reviewsBody:
       'Een bedrijf vraagt pas om Google-reviews als de eigen resultaten goed genoeg zijn. Daarna krijgt iedere gast dezelfde uitnodiging.',
-    businessTitle: 'Wil je weten wat jouw gasten echt ervaren?',
+
+    privacyTitle: 'Wat gebeurt er met jouw feedback?',
+    privacyBody:
+      'Je antwoorden gaan naar het bedrijf waar je was. We voegen reacties samen tot thema\u2019s, zodat losse antwoorden niet naar jou te herleiden zijn.',
+    privacyLinkPrivacy: 'Privacyverklaring',
+    privacyLinkData: 'Hoe wij gegevens gebruiken',
+    privacyLinkContact: 'Contact',
+    transparencyTitle: 'Over deze pagina\u2019s',
+    transparency1: 'De cijfers komen uit feedback die via GeefSterren is verzameld.',
+    transparency2:
+      'Reacties worden geaggregeerd; losse antwoorden worden nooit openbaar getoond.',
+    transparency3: 'De vestiging bepaalt zelf welke verbeteringen zij publiceert.',
+    transparency4:
+      'GeefSterren controleert bedrijven niet zelfstandig en verifieert niet elke verbetering.',
+    faqTitle: 'Vragen die gasten stellen',
+    faq1Q: 'Wordt mijn feedback openbaar?',
+    faq1A:
+      'Nee. Je antwoorden gaan naar het bedrijf. Alleen samengevoegde thema\u2019s en verbeteringen komen op een openbare pagina, nooit jouw losse reactie.',
+    faq2Q: 'Moet ik mijn e-mailadres achterlaten?',
+    faq2A:
+      'Nee. We vragen alleen om een e-mailadres als je een beloning wilt of updates wilt ontvangen. Je mag dat altijd overslaan.',
+    faq3Q: 'Kost een lage score mij iets?',
+    faq3A:
+      'Nee. Een beloning hangt aan het invullen van de vragenlijst, nooit aan je score en nooit aan het plaatsen van een openbare review.',
+    faq4Q: 'Ben ik verplicht een Google-review te plaatsen?',
+    faq4A:
+      'Nee. Als een bedrijf het vraagt, vraagt het dat aan iedere gast op dezelfde manier, en je kunt afronden zonder het te doen.',
+    faq5Q: 'Hoe lang duurt het?',
+    faq5A: 'Ongeveer een minuut. Vijf korte vragen, en het opmerkingenveld is optioneel.',
+
+    businessTitle: 'Wil je weten wat klanten echt ervaren?',
     businessBody:
-      'Gestructureerde feedback per vestiging, thema’s in plaats van losse reviews, en een helder moment om openbare reviews te gaan verzamelen.',
+      'Gestructureerde feedback per vestiging, thema\u2019s in plaats van losse reviews, en een helder moment om openbare reviews te gaan verzamelen.',
   },
 };

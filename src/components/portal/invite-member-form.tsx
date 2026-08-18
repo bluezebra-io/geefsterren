@@ -7,12 +7,12 @@ import { Checkbox, FieldError, FormError, FormSuccess, Input, Label, Select } fr
 import { Button } from '@/components/ui/button';
 import { inviteMemberAction } from '@/features/memberships/actions';
 import { requiresLocationAssignments } from '@/features/memberships/service';
-import { useMessages } from '@/lib/i18n/provider';
+import { usePortalMessages } from '@/lib/i18n/provider';
 import type { ActionResult, OrganizationRole } from '@/types/domain';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  const t = useMessages();
+  const t = usePortalMessages();
   return (
     <Button type="submit" loading={pending}>
       {pending ? t.auth.sending : t.users.inviteAction}
@@ -27,7 +27,7 @@ export function InviteMemberForm({
   organizationId: string;
   locations: Array<{ id: string; name: string }>;
 }) {
-  const t = useMessages();
+  const t = usePortalMessages();
   const [state, formAction] = useActionState<ActionResult<{ userId: string }> | null, FormData>(
     inviteMemberAction,
     null,

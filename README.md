@@ -35,7 +35,7 @@ npm install
 npm run db:start            # start local Postgres, Auth, Storage (first run pulls images)
 cp .env.example .env.local  # then fill in the values printed by db:start
 npm run db:reset            # apply migrations + seed
-npm run dev                 # http://localhost:5000
+npm run dev                 # http://localhost:5010
 ```
 
 ### Filling in `.env.local`
@@ -54,14 +54,15 @@ fails the boot with a specific message rather than surfacing later as a confusin
 
 | URL | Serves |
 | --- | --- |
-| http://localhost:5000 | public website and the `/r/{token}` guest flow |
-| http://app.localhost:5000 | portal (`app.localhost` resolves to 127.0.0.1 on macOS and Linux) |
+| http://localhost:5010 | public website and the `/r/{token}` guest flow |
+| http://app.localhost:5010 | portal (`app.localhost` resolves to 127.0.0.1 on macOS and Linux) |
 | http://127.0.0.1:54323 | Supabase Studio |
 | http://127.0.0.1:54324 | Mailpit — every local email lands here |
 
-> **macOS port 5000.** AirPlay Receiver (ControlCenter) binds port 5000 and answers `403`. Either
-> turn it off in System Settings → General → AirDrop & Handoff → AirPlay Receiver, or run
-> `npx next dev --port 5001` and point the three `NEXT_PUBLIC_*_URL` values at 5001.
+> **Why 5010 and not 5000.** On macOS, AirPlay Receiver (ControlCenter) binds port 5000 and answers
+> every request with `403`, which looks exactly like an application error. Port 5010 avoids it.
+> If you change the port, update the three `NEXT_PUBLIC_*_URL` values to match — the proxy decides
+> marketing vs portal by comparing the request host to `NEXT_PUBLIC_PORTAL_URL`.
 
 ## Design system
 

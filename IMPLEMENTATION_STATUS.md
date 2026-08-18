@@ -1,6 +1,6 @@
 # GeefSterren — Implementation Status
 
-Last updated: 2026-08-01
+Last updated: 2026-08-04
 
 ---
 
@@ -162,17 +162,22 @@ migration, never by editing an applied one.
 | 03 | `0003_rls_helpers.sql` | `SECURITY DEFINER` authorisation helpers in `app` schema |
 | 04 | `0004_core_rls_policies.sql` | RLS enabled + policies for phase-1 tables |
 | 05 | `0005_audit_logs.sql` | `audit_logs` + `app.write_audit_log()` |
-| 06 | `0006_questionnaires.sql` | templates, versions, questions, options, immutability triggers |
-| 07 | `0007_campaigns_and_qr.sql` | `campaigns`, `qr_codes` |
-| 08 | `0008_feedback.sql` | sessions, submissions, answers |
-| 09 | `0009_rewards.sql` | reward campaigns and issuances |
-| 10 | `0010_review_readiness.sql` | settings, rules, evaluations, external invitations |
-| 11 | `0011_ai_analysis.sql` | analysis runs, results, classifications |
-| 12 | `0012_privacy.sql` | privacy requests |
-| 13 | `0013_analytics_views.sql` | metric views and SQL functions |
-| 14 | `0014_queues.sql` | Supabase Queues setup |
+| 06 | `0006_access_rpc.sql` | public wrappers so the app can call the `app`-schema predicates |
+| 07 | `0007_questionnaires.sql` | templates, versions, questions, options, immutability triggers |
+| 08 | `0008_campaigns_and_qr.sql` | `campaigns`, `qr_codes` |
+| 09 | `0009_feedback.sql` | sessions, submissions, answers |
+| 10 | `0010_rewards.sql` | reward campaigns and issuances |
+| 11 | `0011_review_readiness.sql` | settings, rules, evaluations, external invitations |
+| 12 | `0012_ai_analysis.sql` | analysis runs, results, classifications |
+| 13 | `0013_privacy.sql` | privacy requests |
+| 14 | `0014_analytics_views.sql` | metric views and SQL functions |
+| 15 | `0015_queues.sql` | Supabase Queues setup |
 
-Migrations 01–05 belong to Phase 1 and are implemented. 06 onward land with their phases.
+Migrations 01–06 belong to Phase 1 and are applied. 07 onward land with their phases.
+
+`0006` was not in the original plan. The `app` schema is deliberately not exposed through
+PostgREST, so the application could not call `app.can_manage_location()` or `app.write_audit_log()`
+directly; thin `public` wrappers give it access without duplicating the rules in TypeScript.
 
 Rules:
 
@@ -252,6 +257,80 @@ server endpoint, and the token → campaign resolution has to happen server-side
 ---
 
 ## 6. Implementation phases
+
+### Phase 0 — Design system integration
+
+Delivered alongside Phase 1, from the "GeefSterren Design System" handoff.
+
+- [x] Full token layer in `src/app/globals.css`, copied one-to-one from `tokens/*.css` and exposed
+      to Tailwind through `@theme`
+- [x] Plus Jakarta Sans + DM Sans, self-hosted via `next/font`; tabular numerals everywhere
+- [x] Brand assets in `public/brand/`, favicon, inline logo mark with the exact path from the
+      handoff
+- [x] UI primitives rebuilt to spec: Button (36/44/52, r10, six variants, loading state), Card
+      (r14, 1px cream border), Input/Select/Textarea/Checkbox (44px, focus halo), Alert, Badge,
+      StatCard, EmptyState
+- [x] Portal shell: 256px ink sidebar — the only inversion in the system — on a cream content area
+- [x] Consumer-first public homepage
+- [x] i18n layer: English source, complete Dutch catalogue, cookie → `Accept-Language` → default
+- [x] Accessibility baseline: 2px ink focus outline + 3px amber halo, 44px targets, errors bound to
+      inputs by `id`, `prefers-reduced-motion` honoured
+
+Deferred deliberately: `RatingControl` (the product signature) belongs with the guest flow in
+Phase 3, where it can be tested against real screens with a keyboard and a screen reader. Charts,
+DataTable and ReadinessMeter land with Phases 5–6.
+
+### Consumer homepage — design system §8
+
+All eight sections built, consumer-first, with the business section last.
+
+- [x] Sticky 68px nav: logo, section links, sign-in, amber business CTA — the only amber up there
+- [x] Brand lockup rebuilt as the amber tile + white star from the reference screenshot
+- [x] Hero with eyebrow, 56px display headline, and the feedback code field **inline in a white
+      card**, not behind a modal
+- [x] Hero phone mock: location header, 2/4 progress, cumulative star row with the chosen option
+      carrying an ink border and bar, scale legend, topic chips, primary action, attribution —
+      decorative and `aria-hidden`, but it obeys the rating rules so it cannot teach the wrong thing
+- [x] `FeedbackCodeInput`: 52px field, 20px bold at 0.16em tracking, uppercase, 2px border
+- [x] Feedback codes use **Crockford Base32** (`O`→`0`, `I`/`L`→`1`, `U`→`V`) so a code read off a
+      sticker in bad light still resolves — with unit tests
+- [x] "How your feedback helps" — `StepFlow`, ink numbers, only the payoff step amber
+- [x] "What changes thanks to feedback" — anonymised case + three `BeforeAfter` figures under an
+      `ExampleLabel`
+- [x] "Businesses that listen" — `LocationCard` grid, no scores and no ranking
+- [x] "Why your opinion matters" — three benefits, no guilt language
+- [x] "What happens with your feedback" — `TransparencyBlock` + `FaqList`, on the page itself
+      rather than only in the footer
+- [x] Business section, then ink-950 footer
+- [x] Full Dutch and English copy
+
+Two honest gaps, both visible in the UI rather than papered over:
+
+- **The code field cannot resolve yet.** `qr_codes` arrives in Phase 2, so no code exists to find.
+  `lookupTokenForCode()` returns null and the field shows its normal neutral message. Phase 2
+  replaces that one function body; nothing above it changes.
+- **The "businesses that listen" grid renders its empty state.** It needs published improvement data
+  (Phase 6). It deliberately does *not* show invented businesses: named fake companies read as real
+  customers even under an example label, which is a claim we are not entitled to make. The
+  anonymised case in the section above is different — no company is named, and it is labelled.
+
+`FollowUpdates` (improvement-update sign-up) is specified but not built: it needs double opt-in
+email and encrypted address storage from Phase 4. A form that silently discarded email addresses
+would be worse than its absence.
+
+### Playwright smoke suite
+
+Brought forward from Phase 8 because it is what would have caught the 500 described in risk 9.
+
+- [x] `playwright.config.ts`, `npm run test:e2e`, reuses a running dev server
+- [x] Homepage responds 200 in both languages with no console errors, one `h1`, the code field
+      visible, and every section heading rendered
+- [x] An unknown feedback code is refused, and the message is asserted **not** to hint at why
+- [x] Portal sign-in renders; an unauthenticated `/app` visit redirects
+
+Two nav links — `/hoe-het-werkt` and `/verbeteringen` — are in the design's navigation but those
+pages are listed as "nog niet ontworpen" in the handoff, so they currently 404. They must be built
+or removed from the nav before launch.
 
 ### Phase 1 — Foundation
 
@@ -341,6 +420,48 @@ budget rather than assuming a batch fits.
 emails. There is no key rotation story in the MVP. The ciphertext format is versioned from day one
 (`v1:` prefix) so rotation can be added without a data migration.
 
-**8. Default branch is `production`.** Committing feature work straight onto `production` in a repo
+**8. `@theme` self-references silently unset a variable.** Tailwind 4 re-emits every `@theme` entry
+into `:root`, so `--color-surface: var(--color-surface)` is a cycle that CSS discards — the
+variable becomes unset and every consumer loses its value with no warning at build time. Eight of
+these were introduced and caught by inspecting the compiled stylesheet, not by the build. `@theme`
+aliases must therefore point at a *ramp* variable, never at the same-named semantic token. Worth a
+CI check if the token layer grows.
+
+**9. A passing build does not prove a page renders.** Every route in this app is dynamic (`ƒ`), so
+`next build` type-checks and compiles them without ever executing them. The marketing layout was
+missing its `I18nProvider` and every homepage request threw a 500 — through a clean build, a clean
+typecheck and a clean lint. Only an actual request found it. Smoke-testing each surface after a
+layout change is not optional here; a Playwright run over the four surfaces in Phase 8 should make
+it automatic.
+
+**10. Serialised message catalogues leak across surfaces.** Anything a server layout hands to a
+Client Component is serialised into the HTML. Passing the whole catalogue put every portal string —
+role labels, portal error messages — into the public homepage payload. Now scoped per surface in
+`lib/i18n/scope.ts`. Worth re-checking whenever a new provider is added.
+
+**11. `next/font/google` needs network access at build time.** One build in this session failed
+with a bare `next/font: error`; the identical build passed on the next run. The loader downloads
+the woff2 files from Google during `next build` and self-hosts the *output*, so a network blip is a
+failed build rather than a slow page. Vercel is fine; an air-gapped or flaky CI is not. If it
+recurs, vendor the two families into `public/fonts` and switch to `next/font/local` — the design
+handoff already recommends self-hosting.
+
+**12. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
+`geefsterre.nl`; the design system, the repository name and the git remote all say `GeefSterren`.
+Confirmed with the product owner and applied throughout. `geefsterren.nl` still has to be acquired,
+with `geefsterre.nl` redirecting to it — see §16 of the design handoff.
+
+**13. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
+the tension to resolve before Phase 3: the design system treats Dutch consumer copy as a
+*functional* requirement — the tone rules are part of the brand promise — so the guest flow should
+default to `nl` for Dutch locations regardless of the portal's locale.
+
+**14. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
+looks exactly like an application error. Local development therefore runs on **5010**, which is
+free. Anyone changing the port must update the three `NEXT_PUBLIC_*_URL` values with it: the proxy
+decides marketing vs portal by comparing the request host against `NEXT_PUBLIC_PORTAL_URL`, so a
+mismatched port silently sends every portal request to the marketing site.
+
+**15. Default branch is `production`.** Committing feature work straight onto `production` in a repo
 wired to Vercel would deploy it. `main` should be created and set as the default before any
 deployment integration is connected.

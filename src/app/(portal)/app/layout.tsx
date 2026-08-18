@@ -6,10 +6,15 @@ import { SignOutButton } from '@/components/portal/sign-out-button';
 import { Alert } from '@/components/ui';
 import { signOutAction } from '@/features/auth/actions';
 import { getPortalActor } from '@/features/auth/queries';
-import { defaultOrganizationId, isPlatformStaff } from '@/features/auth/service';
+import { getActiveOrganizationId } from '@/features/auth/organization-context';
+import { getOrganization } from '@/features/organizations/queries';
+import { PlatformContextBanner } from '@/components/portal/platform-context-banner';
+import { format } from '@/lib/i18n/locale';
+import { isPlatformContext, isPlatformStaff } from '@/features/auth/service';
 import { getMessages } from '@/lib/i18n/locale';
 import { resolveLocale } from '@/lib/i18n/locale';
-import { I18nProvider } from '@/lib/i18n/provider';
+import { PortalI18nProvider } from '@/lib/i18n/provider';
+import { pickPortalMessages } from '@/lib/i18n/scope';
 
 export default async function PortalLayout({ children }: { children: ReactNode }) {
   const actor = await getPortalActor();
@@ -19,9 +24,18 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   // alternative is a crash on `actor.userId`.
   if (!actor) redirect('/auth/sign-in');
 
-  const [t, locale] = await Promise.all([getMessages(), resolveLocale()]);
-  const organizationId = defaultOrganizationId(actor);
+  const [t, locale, organizationId] = await Promise.all([
+    getMessages(),
+    resolveLocale(),
+    getActiveOrganizationId(),
+  ]);
+
   const hasContext = organizationId !== null || isPlatformStaff(actor);
+
+  // Only look up the name when the banner will actually be shown.
+  const platformContext = isPlatformContext(actor, organizationId);
+  const viewedOrganization =
+    platformContext && organizationId ? await getOrganization(organizationId) : null;
 
   const roleLabel =
     actor.platformRole === 'platform_admin'
@@ -31,9 +45,9 @@ export default async function PortalLayout({ children }: { children: ReactNode }
         : null;
 
   return (
-    <I18nProvider locale={locale} messages={t}>
+    <PortalI18nProvider locale={locale} messages={pickPortalMessages(t)}>
       <div className="flex min-h-screen bg-[var(--color-background)]">
-        <Sidebar>
+        <Sidebar showPlatformLink={isPlatformStaff(actor)}>
           <div className="px-3 py-1">
             <p className="truncate text-sm font-medium text-[var(--color-text-inverse)]">
               {actor.fullName ?? actor.email}
@@ -48,6 +62,15 @@ export default async function PortalLayout({ children }: { children: ReactNode }
         </Sidebar>
 
         <div className="flex min-w-0 flex-1 flex-col">
+          {viewedOrganization ? (
+            <PlatformContextBanner
+              message={format(t.platform.contextBanner, {
+                organization: viewedOrganization.name,
+              })}
+              exitLabel={t.platform.contextExit}
+            />
+          ) : null}
+
           <main className="mx-auto w-full max-w-portal flex-1 px-8 py-8">
             {hasContext ? (
               children
@@ -57,6 +80,6 @@ export default async function PortalLayout({ children }: { children: ReactNode }
           </main>
         </div>
       </div>
-    </I18nProvider>
+    </PortalI18nProvider>
   );
 }

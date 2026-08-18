@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 
 import { Badge, Card, CardBody, CardHeader, CardTitle, EmptyState, StatCard } from '@/components/ui';
-import { getPortalActor } from '@/features/auth/queries';
-import { defaultOrganizationId } from '@/features/auth/service';
+import { getPortalContext } from '@/features/auth/organization-context';
 import { listLocations } from '@/features/locations/queries';
 import { getOrganization, getOrganizationSummary } from '@/features/organizations/queries';
 import { getMessages } from '@/lib/i18n/locale';
@@ -12,8 +11,7 @@ import type { EntityStatus } from '@/types/domain';
 export const metadata = { title: 'Overview — GeefSterren' };
 
 export default async function PortalOverviewPage() {
-  const [actor, t] = await Promise.all([getPortalActor(), getMessages()]);
-  const organizationId = actor ? defaultOrganizationId(actor) : null;
+  const [{ actor, organizationId }, t] = await Promise.all([getPortalContext(), getMessages()]);
 
   if (!organizationId) {
     return (

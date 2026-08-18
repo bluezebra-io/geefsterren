@@ -1,61 +1,80 @@
 import { cn } from '@/lib/utils';
 
 /**
- * The brand lockup — design system §11.
+ * The brand lockup: an amber tile holding a white star, followed by the
+ * wordmark.
  *
- * The mark is "De Feedbackster": a speech bubble with a star cut out of it,
- * tail bottom-left. One path with `fill-rule: evenodd`, so it renders in any
- * single colour and stays legible from 16px. The path below is copied verbatim
- * from `assets/logo-mark.svg` in the handoff — inlined rather than loaded as an
- * `<img>` so it can inherit a colour per surface.
+ * The star path is copied verbatim from `assets/star-plain.svg` in the handoff
+ * and inlined rather than loaded as an `<img>`, so it can take a fill per
+ * surface.
  *
  * The wordmark is deliberately **not** an SVG: it is Plus Jakarta Sans 800 at
- * `letter-spacing: -0.024em`, with "Geef" in ink and "Sterren" in amber-700.
- * As text it stays selectable and matches the loaded font exactly.
+ * `letter-spacing: -0.024em`, with "Geef" in ink and "Sterren" in amber. As
+ * text it stays selectable and matches the loaded font exactly.
  */
 
-const MARK_PATH =
-  'M 24 2 H 96 A 22 22 0 0 1 118 24 V 78 A 22 22 0 0 1 96 100 H 46 L 33 116 Q 27 121 28 113 L 30 100 H 24 A 22 22 0 0 1 2 78 V 24 A 22 22 0 0 1 24 2 Z M 58.27 19.69 Q 60.00 15.00 61.73 19.69 L 66.82 33.47 Q 68.82 38.86 74.56 39.09 L 89.24 39.68 Q 94.24 39.88 90.31 42.97 L 78.78 52.07 Q 74.27 55.64 75.82 61.17 L 79.81 75.31 Q 81.16 80.12 77.00 77.35 L 64.78 69.19 Q 60.00 66.00 55.22 69.19 L 43.00 77.35 Q 38.84 80.12 40.19 75.31 L 44.18 61.17 Q 45.73 55.64 41.22 52.07 L 29.69 42.97 Q 25.76 39.88 30.76 39.68 L 45.44 39.09 Q 51.18 38.86 53.18 33.47 L 58.27 19.69 Z';
+const STAR_PATH =
+  'M 57.8 11.1 Q 60.0 5.0 62.2 11.1 L 70.5 33.5 Q 72.9 40.2 80.1 40.5 L 103.9 41.4 Q 110.4 41.6 105.3 45.6 L 86.5 60.4 Q 80.9 64.8 82.9 71.7 L 89.4 94.6 Q 91.2 100.9 85.8 97.3 L 65.9 84.0 Q 60.0 80.0 54.1 84.0 L 34.2 97.3 Q 28.8 100.9 30.6 94.6 L 37.1 71.7 Q 39.1 64.8 33.5 60.4 L 14.7 45.6 Q 9.6 41.6 16.1 41.4 L 39.9 40.5 Q 47.1 40.2 49.5 33.5 L 57.8 11.1 Z';
 
-const TONE_FILL = {
-  amber: 'var(--color-brand-primary)',
-  ink: 'var(--gs-ink-900)',
-  cream: 'var(--gs-cream-50)',
-} as const;
-
-export type LogoTone = keyof typeof TONE_FILL;
-
-export function LogoMark({
+/** The star on its own, for the rating row and the empty-state art. */
+export function Star({
   className,
-  tone = 'amber',
-  title = 'GeefSterren',
+  filled = true,
 }: {
   className?: string;
-  tone?: LogoTone;
-  title?: string;
+  filled?: boolean;
 }) {
   return (
-    <svg viewBox="0 0 120 120" role="img" aria-label={title} className={cn('size-7', className)}>
-      <path d={MARK_PATH} fill={TONE_FILL[tone]} fillRule="evenodd" clipRule="evenodd" />
+    <svg viewBox="0 0 120 120" aria-hidden="true" className={cn('size-5', className)}>
+      <path
+        d={STAR_PATH}
+        fill={filled ? 'currentColor' : 'none'}
+        stroke={filled ? undefined : 'currentColor'}
+        strokeWidth={filled ? undefined : 9}
+        strokeLinejoin="round"
+      />
     </svg>
+  );
+}
+
+/** The amber tile with the star inside. */
+export function LogoMark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'grid size-9 shrink-0 place-items-center rounded-[0.5rem] bg-[var(--color-brand-primary)] text-white',
+        className,
+      )}
+    >
+      <Star className="size-[60%]" />
+    </span>
   );
 }
 
 export function Logo({
   className,
   inverse = false,
+  markClassName,
+  wordmarkClassName,
 }: {
   className?: string;
   inverse?: boolean;
+  markClassName?: string;
+  wordmarkClassName?: string;
 }) {
   return (
-    <span className={cn('inline-flex items-center gap-2', className)}>
-      <LogoMark tone="amber" className="size-7" />
-      <span className="font-display text-lg font-extrabold" style={{ letterSpacing: '-0.024em' }}>
+    <span className={cn('inline-flex items-center gap-2.5', className)}>
+      <LogoMark className={markClassName} />
+      <span
+        className={cn('font-display text-xl font-extrabold', wordmarkClassName)}
+        style={{ letterSpacing: '-0.024em' }}
+      >
         <span style={{ color: inverse ? 'var(--color-text-inverse)' : 'var(--gs-ink-900)' }}>
           Geef
         </span>
-        <span style={{ color: inverse ? 'var(--color-brand-primary)' : 'var(--gs-amber-700)' }}>
+        <span
+          style={{ color: inverse ? 'var(--color-brand-primary)' : 'var(--gs-amber-600)' }}
+        >
           Sterren
         </span>
       </span>

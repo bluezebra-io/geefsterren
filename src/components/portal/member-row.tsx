@@ -12,7 +12,7 @@ import {
 } from '@/features/memberships/actions';
 import { requiresLocationAssignments } from '@/features/memberships/service';
 import type { OrganizationMemberRow } from '@/features/memberships/queries';
-import { useMessages } from '@/lib/i18n/provider';
+import { usePortalMessages } from '@/lib/i18n/provider';
 import type { ActionResult, MembershipStatus, OrganizationRole } from '@/types/domain';
 
 function PendingButton({
@@ -43,7 +43,7 @@ export function MemberRow({
   canManage: boolean;
   isSelf: boolean;
 }) {
-  const t = useMessages();
+  const t = usePortalMessages();
   const [expanded, setExpanded] = useState(false);
 
   const [updateState, updateAction] = useActionState<ActionResult<void> | null, FormData>(

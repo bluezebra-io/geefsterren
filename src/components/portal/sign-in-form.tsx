@@ -6,12 +6,12 @@ import { useFormStatus } from 'react-dom';
 import { Card, CardBody, FieldError, FormError, Input, Label } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { sendMagicLinkAction } from '@/features/auth/actions';
-import { format, useMessages } from '@/lib/i18n/provider';
+import { format, usePortalMessages } from '@/lib/i18n/provider';
 import type { ActionResult } from '@/types/domain';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  const t = useMessages();
+  const t = usePortalMessages();
   return (
     <Button type="submit" block loading={pending}>
       {pending ? t.auth.sending : t.auth.sendLink}
@@ -20,7 +20,7 @@ function SubmitButton() {
 }
 
 export function SignInForm({ next }: { next?: string }) {
-  const t = useMessages();
+  const t = usePortalMessages();
   const [state, formAction] = useActionState<ActionResult<{ email: string }> | null, FormData>(
     sendMagicLinkAction,
     null,

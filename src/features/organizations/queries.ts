@@ -79,3 +79,45 @@ export async function getOrganizationSummary(organizationId: string): Promise<Or
     memberCount: members.count ?? 0,
   };
 }
+
+export type OrganizationWithCounts = Organization & {
+  locationCount: number;
+  memberCount: number;
+};
+
+/**
+ * Every organization the caller may see, with location and member counts.
+ *
+ * For platform staff RLS makes that "all of them", which is what the platform
+ * overview needs. Counts are aggregated in one pass over two queries rather than
+ * two counts per organization — at MVP scale the N+1 would be dozens of
+ * round-trips for a page that shows a handful of numbers.
+ */
+export async function listOrganizationsWithCounts(): Promise<OrganizationWithCounts[]> {
+  const supabase = await createSupabaseServerClient();
+
+  const [organizations, locations, memberships] = await Promise.all([
+    supabase.from('organizations').select('*').is('archived_at', null).order('name'),
+    supabase.from('locations').select('organization_id').is('archived_at', null),
+    supabase.from('organization_memberships').select('organization_id').eq('status', 'active'),
+  ]);
+
+  if (organizations.error) throw organizations.error;
+  if (locations.error) throw locations.error;
+  if (memberships.error) throw memberships.error;
+
+  const tally = (rows: Array<{ organization_id: string }>) => {
+    const counts = new Map<string, number>();
+    for (const row of rows) counts.set(row.organization_id, (counts.get(row.organization_id) ?? 0) + 1);
+    return counts;
+  };
+
+  const locationCounts = tally(locations.data ?? []);
+  const memberCounts = tally(memberships.data ?? []);
+
+  return (organizations.data ?? []).map((organization) => ({
+    ...organization,
+    locationCount: locationCounts.get(organization.id) ?? 0,
+    memberCount: memberCounts.get(organization.id) ?? 0,
+  }));
+}

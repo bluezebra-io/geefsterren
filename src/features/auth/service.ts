@@ -63,3 +63,46 @@ export function canManageMembers(actor: PortalActor, organizationId: string): bo
 export function defaultOrganizationId(actor: PortalActor): string | null {
   return actor.organizations[0]?.organizationId ?? null;
 }
+
+/**
+ * May this actor look at this organization at all?
+ *
+ * Membership is the normal route. Platform staff qualify without a membership,
+ * which is what makes "open a participant" possible — and it is the same rule
+ * the RLS policies already apply, so the UI cannot show more than the database
+ * would hand over.
+ */
+export function mayViewOrganization(actor: PortalActor, organizationId: string): boolean {
+  return isPlatformStaff(actor) || isOrganizationMember(actor, organizationId);
+}
+
+/**
+ * The organization the portal should render.
+ *
+ * `requested` comes from a cookie, so it is attacker-controlled: it is only
+ * honoured when the actor is actually allowed to see it, otherwise we fall back
+ * to their own default. A stale or forged cookie therefore degrades to "your own
+ * organization", never to someone else's.
+ */
+export function resolveActiveOrganizationId(
+  actor: PortalActor,
+  requested: string | null | undefined,
+): string | null {
+  if (requested && mayViewOrganization(actor, requested)) return requested;
+  return defaultOrganizationId(actor);
+}
+
+/**
+ * True when the actor is inside this organization purely by platform privilege,
+ * not by membership.
+ *
+ * Drives the banner. Someone acting outside their own tenant should never be
+ * left guessing whose data is on screen.
+ */
+export function isPlatformContext(
+  actor: PortalActor,
+  organizationId: string | null,
+): boolean {
+  if (!organizationId) return false;
+  return isPlatformStaff(actor) && !isOrganizationMember(actor, organizationId);
+}

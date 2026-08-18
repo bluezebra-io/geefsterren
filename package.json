@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 5000",
+    "dev": "next dev --port 5010",
     "build": "next build",
-    "start": "next start --port 5000",
+    "start": "next start --port 5010",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --dir tests/unit",
@@ -16,7 +16,8 @@
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --local --schema public > src/types/database.generated.ts",
-    "db:seed": "supabase db reset"
+    "db:seed": "supabase db reset",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=22"
@@ -38,6 +39,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",

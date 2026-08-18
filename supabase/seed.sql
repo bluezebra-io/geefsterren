@@ -51,7 +51,22 @@ values
   -- leak to, an RLS test can pass while proving nothing.
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-000000000006', 'authenticated', 'authenticated',
    'org.admin@pizzeria.test', crypt('LocalDev!2026', gen_salt('bf')), now(), now(), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Alex Moretti"}', '', '', '', '', '', '', '', '')
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Alex Moretti"}', '', '', '', '', '', '', '', ''),
+
+  -- Second platform administrator. Two exist on purpose: the last-admin guard
+  -- and the "open a participant" flow are both easier to exercise with a spare.
+  ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-000000000007', 'authenticated', 'authenticated',
+   'super.admin@geefsterren.test', crypt('LocalDev!2026', gen_salt('bf')), now(), now(), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Super Admin"}', '', '', '', '', '', '', '', ''),
+
+  -- Third organization: the newly onboarded participant.
+  ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-000000000008', 'authenticated', 'authenticated',
+   'eigenaar@sushinoord.test', crypt('LocalDev!2026', gen_salt('bf')), now(), now(), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Noor van Dijk"}', '', '', '', '', '', '', '', ''),
+
+  ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-000000000009', 'authenticated', 'authenticated',
+   'manager@sushinoord.test', crypt('LocalDev!2026', gen_salt('bf')), now(), now(), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Tim Bakhuis"}', '', '', '', '', '', '', '', '')
 on conflict (id) do nothing;
 
 -- Identities. Supabase Auth needs these for email/password sign-in to work.
@@ -63,7 +78,8 @@ select
   jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true),
   'email', now(), now(), now()
 from auth.users u
-where u.email like '%@geefsterren.test' or u.email like '%@bakkerij.test' or u.email like '%@pizzeria.test'
+where u.email like '%@geefsterren.test' or u.email like '%@bakkerij.test'
+   or u.email like '%@pizzeria.test' or u.email like '%@sushinoord.test'
 on conflict do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -73,6 +89,8 @@ update public.profiles set platform_role = 'platform_admin'
   where user_id = '11111111-1111-4111-8111-000000000001';
 update public.profiles set platform_role = 'platform_support'
   where user_id = '11111111-1111-4111-8111-000000000002';
+update public.profiles set platform_role = 'platform_admin'
+  where user_id = '11111111-1111-4111-8111-000000000007';
 
 -- ---------------------------------------------------------------------------
 -- Organizations
@@ -80,7 +98,8 @@ update public.profiles set platform_role = 'platform_support'
 insert into public.organizations (id, name, slug, status, default_timezone)
 values
   ('22222222-2222-4222-8222-000000000001', 'Bakkerij De Korenaar', 'bakkerij-de-korenaar', 'active', 'Europe/Amsterdam'),
-  ('22222222-2222-4222-8222-000000000002', 'Pizzeria Napoli',      'pizzeria-napoli',      'active', 'Europe/Amsterdam')
+  ('22222222-2222-4222-8222-000000000002', 'Pizzeria Napoli',      'pizzeria-napoli',      'active', 'Europe/Amsterdam'),
+  ('22222222-2222-4222-8222-000000000003', 'Sushi Noord',          'sushi-noord',          'active', 'Europe/Amsterdam')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -101,6 +120,16 @@ values
   ('33333333-3333-4333-8333-000000000003', '22222222-2222-4222-8222-000000000002',
    'Napoli Centrum', 'centrum', 'active', 'Europe/Amsterdam',
    '{"street":"Damstraat 3","postal_code":"1012 JL","city":"Amsterdam","country":"NL"}',
+   null),
+
+  ('33333333-3333-4333-8333-000000000004', '22222222-2222-4222-8222-000000000003',
+   'Sushi Noord Groningen', 'groningen', 'active', 'Europe/Amsterdam',
+   '{"street":"Herestraat 88","postal_code":"9711 LM","city":"Groningen","country":"NL"}',
+   'https://g.page/r/sushi-noord-groningen'),
+
+  ('33333333-3333-4333-8333-000000000005', '22222222-2222-4222-8222-000000000003',
+   'Sushi Noord Assen', 'assen', 'active', 'Europe/Amsterdam',
+   '{"street":"Koopmansplein 4","postal_code":"9401 EA","city":"Assen","country":"NL"}',
    null)
 on conflict (id) do nothing;
 
@@ -116,7 +145,11 @@ values
   ('44444444-4444-4444-8444-000000000003', '22222222-2222-4222-8222-000000000001',
    '11111111-1111-4111-8111-000000000005', 'viewer', 'active'),
   ('44444444-4444-4444-8444-000000000004', '22222222-2222-4222-8222-000000000002',
-   '11111111-1111-4111-8111-000000000006', 'org_admin', 'active')
+   '11111111-1111-4111-8111-000000000006', 'org_admin', 'active'),
+  ('44444444-4444-4444-8444-000000000005', '22222222-2222-4222-8222-000000000003',
+   '11111111-1111-4111-8111-000000000008', 'org_admin', 'active'),
+  ('44444444-4444-4444-8444-000000000006', '22222222-2222-4222-8222-000000000003',
+   '11111111-1111-4111-8111-000000000009', 'location_manager', 'active')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -132,7 +165,11 @@ values
    'location_manager', 'active'),
   ('55555555-5555-4555-8555-000000000002', '22222222-2222-4222-8222-000000000001',
    '33333333-3333-4333-8333-000000000001', '11111111-1111-4111-8111-000000000005',
-   'viewer', 'active')
+   'viewer', 'active'),
+  -- Groningen only, so the participant has its own restricted-manager case.
+  ('55555555-5555-4555-8555-000000000003', '22222222-2222-4222-8222-000000000003',
+   '33333333-3333-4333-8333-000000000004', '11111111-1111-4111-8111-000000000009',
+   'location_manager', 'active')
 on conflict (id) do nothing;
 
 commit;

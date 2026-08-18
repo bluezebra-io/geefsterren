@@ -33,8 +33,8 @@ describe('classifyHost', () => {
   });
 
   it('supports the local development portal host', () => {
-    expect(classifyHost('app.localhost:5000', PORTAL_URL)).toBe('portal');
-    expect(classifyHost('localhost:5000', PORTAL_URL)).toBe('marketing');
+    expect(classifyHost('app.localhost:5010', PORTAL_URL)).toBe('portal');
+    expect(classifyHost('localhost:5010', PORTAL_URL)).toBe('marketing');
   });
 
   it('falls back to marketing for a missing host header', () => {

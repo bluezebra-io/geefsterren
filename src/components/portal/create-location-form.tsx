@@ -6,13 +6,13 @@ import { useFormStatus } from 'react-dom';
 import { FieldError, FormError, Input, Label } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { createLocationAction } from '@/features/locations/actions';
-import { useMessages } from '@/lib/i18n/provider';
+import { usePortalMessages } from '@/lib/i18n/provider';
 import { slugify } from '@/lib/validation/slug';
 import type { ActionResult } from '@/types/domain';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  const t = useMessages();
+  const t = usePortalMessages();
   return (
     <Button type="submit" loading={pending}>
       {pending ? t.locations.adding : t.locations.addAction}
@@ -21,7 +21,7 @@ function SubmitButton() {
 }
 
 export function CreateLocationForm({ organizationId }: { organizationId: string }) {
-  const t = useMessages();
+  const t = usePortalMessages();
   const [state, formAction] = useActionState<ActionResult<{ locationId: string }> | null, FormData>(
     createLocationAction,
     null,

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BadgeCheck,
+  Building2,
   LayoutDashboard,
   MapPin,
   MessageSquareQuote,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 
 import { Logo } from '@/components/ui/logo';
-import { useMessages } from '@/lib/i18n/provider';
+import { usePortalMessages } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 
 /**
@@ -28,8 +29,14 @@ import { cn } from '@/lib/utils';
 
 type NavEntry = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 
-export function Sidebar({ children }: { children?: React.ReactNode }) {
-  const t = useMessages();
+export function Sidebar({
+  children,
+  showPlatformLink = false,
+}: {
+  children?: React.ReactNode;
+  showPlatformLink?: boolean;
+}) {
+  const t = usePortalMessages();
   const pathname = usePathname();
 
   const main: NavEntry[] = [
@@ -41,6 +48,11 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
   // as disabled would be noise, so they simply are not rendered yet.
   const manage: NavEntry[] = [
     { href: '/app/settings/users', label: t.nav.users, icon: Users },
+    // Only platform staff have anywhere to go here, and for them it is the way
+    // back out of a participant's organization.
+    ...(showPlatformLink
+      ? [{ href: '/admin', label: t.platform.adminLink, icon: Building2 }]
+      : []),
   ];
 
   return (

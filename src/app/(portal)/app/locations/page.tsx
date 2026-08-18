@@ -3,8 +3,8 @@ import { MapPin } from 'lucide-react';
 
 import { CreateLocationForm } from '@/components/portal/create-location-form';
 import { Badge, Card, CardBody, CardHeader, CardTitle, EmptyState } from '@/components/ui';
-import { getPortalActor } from '@/features/auth/queries';
-import { canManageOrganization, defaultOrganizationId } from '@/features/auth/service';
+import { getPortalContext } from '@/features/auth/organization-context';
+import { canManageOrganization } from '@/features/auth/service';
 import { listLocations } from '@/features/locations/queries';
 import { getMessages } from '@/lib/i18n/locale';
 import type { EntityStatus } from '@/types/domain';
@@ -18,8 +18,7 @@ const STATUS_TONE: Record<EntityStatus, 'success' | 'warning' | 'neutral'> = {
 };
 
 export default async function LocationsPage() {
-  const [actor, t] = await Promise.all([getPortalActor(), getMessages()]);
-  const organizationId = actor ? defaultOrganizationId(actor) : null;
+  const [{ actor, organizationId }, t] = await Promise.all([getPortalContext(), getMessages()]);
 
   if (!actor || !organizationId) {
     return <EmptyState title={t.overview.noOrganization} />;

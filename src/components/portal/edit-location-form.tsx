@@ -6,12 +6,12 @@ import { useFormStatus } from 'react-dom';
 import { FieldError, FormError, FormSuccess, Input, Label, Select } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { updateLocationAction } from '@/features/locations/actions';
-import { useMessages } from '@/lib/i18n/provider';
+import { usePortalMessages } from '@/lib/i18n/provider';
 import type { ActionResult, Location } from '@/types/domain';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  const t = useMessages();
+  const t = usePortalMessages();
   return (
     <Button type="submit" loading={pending}>
       {pending ? t.common.saving : t.common.save}
@@ -22,7 +22,7 @@ function SubmitButton() {
 type AddressJson = { street?: string; postal_code?: string; city?: string; country?: string };
 
 export function EditLocationForm({ location }: { location: Location }) {
-  const t = useMessages();
+  const t = usePortalMessages();
   const [state, formAction] = useActionState<ActionResult<void> | null, FormData>(
     updateLocationAction,
     null,

@@ -179,13 +179,63 @@ export const en = {
     invalidRequest: 'Invalid request',
   },
 
+  platform: {
+    title: 'Platform',
+    subtitle: 'Every organization on the platform. Open one to work inside it.',
+    organizations: 'Organizations',
+    empty: 'No organizations yet',
+    open: 'Open',
+    current: 'Currently open',
+    locations: 'locations',
+    members: 'members',
+    contextBanner: 'You are viewing {organization} as platform staff. You are not a member of this organization.',
+    contextExit: 'Close participant',
+    readOnlyHint: 'Platform support has read access only.',
+    adminLink: 'Platform',
+    pickOrganization: 'Choose an organization to get started.',
+  },
+
   marketing: {
+    // Hero
+    heroEyebrow: 'Feedback for local businesses',
+    heroNoCode: 'No code? Scan the QR code at the business.',
+
+    // Hero phone mock — decorative, but it shows real product copy.
+    mockLocationName: 'Restaurant De Haven',
+    mockLocationMeta: 'Leiden · Delivery',
+    mockRatingQuestion: 'How do you rate your experience?',
+    mockScaleLow: '1 Very poor',
+    mockScaleHigh: '5 Excellent',
+    mockFollowUpQuestion: 'Where can we improve?',
+    mockTopic1: 'Delivery time',
+    mockTopic2: 'Temperature',
+    mockTopic3: 'Taste',
+    mockTopic4: 'Packaging',
+    mockNext: 'Next',
+
+    // Navigation
+    navHowItWorks: 'How it works',
+    navImprovements: 'Improvements',
+
     heroTitle: 'Give feedback. Help your local business improve.',
     heroBody:
-      'Scan the code you received, answer a few short questions, and the business learns what to fix. It takes about a minute.',
+      'Share in a few short steps how your visit, order or delivery went. Your experience shows a business what is going well and what could be better.',
     heroCta: 'See how it works',
     forBusinesses: 'For businesses',
     signInLink: 'Sign in',
+
+    // Feedback code — the hero's primary action.
+    codeLabel: 'Do you have a feedback code?',
+    codePlaceholder: 'For example: HAVEN24',
+    codeSubmit: 'Continue',
+    codeHelp:
+      'You will find the QR code or feedback code on the packaging, receipt, table card or flyer of the business.',
+    /**
+     * Fixed copy. The message never says why a code failed, so campaign
+     * structure stays private.
+     */
+    codeError: 'This code is not valid or no longer active',
+
     stepsTitle: 'How your feedback helps',
     step1Title: 'Share your experience',
     step1Body: 'A few short questions about what you ordered or where you visited.',
@@ -195,6 +245,34 @@ export const en = {
     step3Body: 'The location sees what recurs and decides what to change first.',
     step4Title: 'The result becomes visible',
     step4Body: 'Improvements are published, so you can see what your feedback changed.',
+
+    // Section 3 — what changes because of customer feedback.
+    changeEyebrow: 'What changes',
+    changeTitle: 'This is what changes thanks to customer feedback',
+    changeExample: 'Example · demonstration data',
+    changeCaseTitle: 'Delivery restaurant, 84 responses',
+    changeCaseHeard: 'What customers reported',
+    changeCaseHeardBody:
+      'Warm dishes sometimes cooled down too much during delivery, especially on longer routes.',
+    changeCaseDid: 'What the location changed',
+    changeCaseDidBody:
+      'Since 14 July this location uses insulated packaging and hands over the warmest dishes last.',
+    changeMetric1: 'Score for temperature',
+    changeMetric1Note: 'Measured over 84 responses, 90 days before and after 14 July',
+    changeMetric2: 'Orders on time',
+    changeMetric2Note: 'Measured over 84 responses, 90 days before and after 14 July',
+    changeMetric3: 'Responses with a complaint about packaging',
+    changeMetric3Note: 'Measured over 84 responses, 90 days before and after 14 July',
+
+    // Section 4 — businesses that listen.
+    listeningTitle: 'Local businesses that listen',
+    listeningBody: 'What customers asked for, and what changed as a result. No scores, no ranking.',
+    listeningEmpty: 'No published improvements yet',
+    listeningEmptyBody:
+      'Businesses publish their improvements here once they have collected enough feedback.',
+
+    // Section 5 — why your opinion matters.
+    whyTitle: 'Why your opinion makes a difference',
     privateTitle: 'Private by default',
     privateBody:
       'Your feedback goes to the business, not to the internet. You answer honestly because it is a conversation, not a performance.',
@@ -204,6 +282,37 @@ export const en = {
     reviewsTitle: 'Reviews, earned first',
     reviewsBody:
       'A business only starts asking for Google reviews once its own results are good enough. Then every guest gets the same invitation.',
+
+    // Section 6 — what happens with your feedback.
+    privacyTitle: 'What happens with your feedback?',
+    privacyBody:
+      'Your answers go to the business you visited. We combine responses into themes so that no single answer can be traced back to you.',
+    privacyLinkPrivacy: 'Privacy statement',
+    privacyLinkData: 'How we use data',
+    privacyLinkContact: 'Contact',
+    transparencyTitle: 'About these pages',
+    transparency1: 'The figures come from feedback collected through GeefSterren.',
+    transparency2: 'Responses are aggregated; individual answers are never shown publicly.',
+    transparency3: 'The business decides which improvements it publishes.',
+    transparency4:
+      'GeefSterren does not independently audit businesses and does not verify every improvement.',
+    faqTitle: 'Questions guests ask',
+    faq1Q: 'Will my feedback be published?',
+    faq1A:
+      'No. Your answers go to the business. Only combined themes and improvements appear on a public page, never your individual response.',
+    faq2Q: 'Do I have to leave my email address?',
+    faq2A:
+      'No. An email address is only asked when you want a reward or want to hear about improvements. You can always skip it.',
+    faq3Q: 'Does a low score cost me anything?',
+    faq3A:
+      'No. A reward depends on completing the questionnaire, never on your score and never on posting a public review.',
+    faq4Q: 'Am I obliged to leave a Google review?',
+    faq4A:
+      'No. When a business asks, it asks every guest the same way, and you can finish without doing it.',
+    faq5Q: 'How long does it take?',
+    faq5A: 'About a minute. Five short questions, and the comment field is optional.',
+
+    // Section 7 — for businesses.
     businessTitle: 'Want to know what your guests really experience?',
     businessBody:
       'Structured feedback per location, themes instead of single reviews, and a clear moment to start collecting public reviews.',

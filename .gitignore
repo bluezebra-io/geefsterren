@@ -46,3 +46,9 @@ supabase/.branches/
 
 # env files are ignored above by `.env*`; the template is committed on purpose
 !.env.example
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
