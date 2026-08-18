@@ -1,7 +1,13 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { QrCode } from 'lucide-react';
+
+import { buttonVariants } from '@/components/ui/button';
 
 import { EditLocationForm } from '@/components/portal/edit-location-form';
-import { Alert, Badge, Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
+import { Alert, Badge, Card, CardBody, CardHeader, CardTitle, StatCard } from '@/components/ui';
+import { QuestionResults, ScoreDistribution } from '@/components/portal/question-results';
+import { getLocationMetrics, getQuestionResults, getRecentComments } from '@/features/feedback/queries';
 import { getPortalActor } from '@/features/auth/queries';
 import { canManageOrganization } from '@/features/auth/service';
 import { getLocation } from '@/features/locations/queries';
@@ -32,6 +38,17 @@ export default async function LocationDetailPage({
   }
 
   const canManage = canManageOrganization(actor, location.organization_id);
+
+  const [metrics, questionResults, comments] = await Promise.all([
+    getLocationMetrics(locationId),
+    getQuestionResults(locationId),
+    getRecentComments(locationId),
+  ]);
+
+  const nl = (value: number | null, digits = 1) =>
+    value === null
+      ? '—'
+      : value.toLocaleString('nl-NL', { minimumFractionDigits: digits, maximumFractionDigits: digits });
   const statusLabel: Record<EntityStatus, string> = {
     active: t.status.active,
     inactive: t.status.inactive,
@@ -47,20 +64,46 @@ export default async function LocationDetailPage({
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">{location.slug}</p>
         </div>
-        <Badge tone={location.status === 'active' ? 'success' : 'neutral'}>
-          {statusLabel[location.status]}
-        </Badge>
+        <div className="flex shrink-0 items-center gap-3">
+          <Badge tone={location.status === 'active' ? 'success' : 'neutral'}>
+            {statusLabel[location.status]}
+          </Badge>
+          <Link
+            href={`/app/locations/${locationId}/qr-codes`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <QrCode aria-hidden="true" className="size-4" />
+            {t.qr.title}
+          </Link>
+        </div>
       </header>
 
+      {/* Four KPI cards at most per row, each with its own evidence line. */}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label={t.results.statResponses}
+          value={metrics.responseCount}
+          evidence={t.results.basedOn
+            .replace('{answered}', String(metrics.responseCount))
+            .replace('{total}', String(metrics.sessionCount))}
+        />
+        <StatCard label={t.results.statAverage} value={nl(metrics.averageScore)} />
+        <StatCard
+          label={t.results.statLowScores}
+          value={metrics.lowScorePercentage === null ? '—' : `${nl(metrics.lowScorePercentage)}%`}
+        />
+        <StatCard
+          label={t.results.statCompletion}
+          value={metrics.completionPercentage === null ? '—' : `${nl(metrics.completionPercentage, 0)}%`}
+        />
+      </div>
+
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.locations.feedbackTitle}</CardTitle>
-          </CardHeader>
-          <CardBody className="text-sm text-[var(--color-text-secondary)]">
-            {t.locations.feedbackPending}
-          </CardBody>
-        </Card>
+        <ScoreDistribution
+          distribution={metrics.distribution}
+          total={metrics.responseCount}
+          t={t}
+        />
 
         <Card>
           <CardHeader>
@@ -79,6 +122,42 @@ export default async function LocationDetailPage({
           </CardBody>
         </Card>
       </div>
+
+      <section>
+        <h2 className="font-display text-xl font-bold tracking-snug text-[var(--color-text-primary)]">
+          {t.results.title}
+        </h2>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t.results.subtitle}</p>
+        <div className="mt-5">
+          <QuestionResults
+            results={questionResults}
+            t={t}
+            totalResponses={metrics.responseCount}
+          />
+        </div>
+      </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.results.recentComments}</CardTitle>
+        </CardHeader>
+        <CardBody>
+          {comments.length === 0 ? (
+            <p className="text-sm text-[var(--color-text-muted)]">{t.results.noComments}</p>
+          ) : (
+            <ul className="divide-y divide-[var(--color-border)]">
+              {comments.map((comment) => (
+                <li key={comment.submissionId} className="flex gap-4 py-3">
+                  <span className="tabular shrink-0 text-sm font-bold text-[var(--color-text-secondary)]">
+                    {comment.score}/5
+                  </span>
+                  <p className="text-sm text-[var(--color-text-primary)]">{comment.comment}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
 
       {canManage ? (
         <Card>

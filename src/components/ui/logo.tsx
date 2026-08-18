@@ -20,12 +20,14 @@ const STAR_PATH =
 export function Star({
   className,
   filled = true,
+  style,
 }: {
   className?: string;
   filled?: boolean;
+  style?: React.CSSProperties;
 }) {
   return (
-    <svg viewBox="0 0 120 120" aria-hidden="true" className={cn('size-5', className)}>
+    <svg viewBox="0 0 120 120" aria-hidden="true" className={cn('size-5', className)} style={style}>
       <path
         d={STAR_PATH}
         fill={filled ? 'currentColor' : 'none'}

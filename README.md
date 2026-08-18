@@ -153,6 +153,26 @@ accounts through the seed or promote them with SQL, and use password sign-in.
 Wrong password, unknown address and unconfirmed account all return the same message on purpose, so
 the form cannot be used to discover which addresses have accounts.
 
+### The feedback loop
+
+The seed ships a published Dutch hospitality questionnaire, assigned organization-wide, plus a
+campaign and QR code per location and about 170 sample responses.
+
+1. **See results.** Sign in and open a location — headline KPIs, score distribution and results per
+   question, each with the base it is calculated on.
+2. **Get a QR.** Location → **QR-codes** → create one. The plain token and printed code are shown
+   **once**; both are stored hashed for lookup and encrypted for reprinting.
+3. **Leave feedback.** Open the review link, or type the printed code in the field on the homepage.
+4. **Watch it land.** The answer appears in the results per question straight away.
+
+The three seeded QR codes predate encrypted storage — the seed runs in SQL, which cannot do
+AES-GCM — so they cannot be downloaded until you press **Opnieuw uitgeven**. Their tokens are in
+`supabase/seed.sql` if you want to open one by hand.
+
+Published questionnaire versions are immutable. That is what lets a response from six months ago
+still be read correctly: answers reference question ids, so a label or option that could change
+afterwards would quietly rewrite history. Changing questions means a new version.
+
 ### Opening a participant as a super admin
 
 Sign in as a platform administrator and go to **http://app.localhost:5010/admin**. Every

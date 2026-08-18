@@ -17,7 +17,7 @@ import type { Messages } from './messages/en';
  * that does not exist in `Messages` is a type error.
  */
 
-const PUBLIC_KEYS = ['brand', 'common', 'marketing'] as const satisfies readonly (keyof Messages)[];
+const PUBLIC_KEYS = ['brand', 'common', 'marketing', 'guest'] as const satisfies readonly (keyof Messages)[];
 
 const PORTAL_KEYS = [
   'brand',
@@ -32,6 +32,8 @@ const PORTAL_KEYS = [
   'users',
   'errors',
   'platform',
+  'results',
+  'qr',
 ] as const satisfies readonly (keyof Messages)[];
 
 export type PublicMessages = Pick<Messages, (typeof PUBLIC_KEYS)[number]>;

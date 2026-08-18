@@ -69,10 +69,45 @@ export const logger = {
 };
 
 /**
- * Normalises an unknown thrown value into something loggable without leaking a stack trace into a
- * user-facing response.
+ * Normalises an unknown thrown value into loggable context.
+ *
+ * The keys are namespaced (`error_name`, `error_message`) rather than `name` and
+ * `message`, because a bare `message` key spread into the log context silently
+ * overwrote the log's own message — every error read "[object Object]" and the
+ * call site was unknowable.
+ *
+ * Non-Error values are JSON-serialised. `String(error)` on a Supabase error
+ * object yields "[object Object]", which is exactly the information you need and
+ * do not get.
  */
-export function describeError(error: unknown): { name: string; message: string } {
-  if (error instanceof Error) return { name: error.name, message: error.message };
-  return { name: 'UnknownError', message: String(error) };
+export function describeError(error: unknown): {
+  error_name: string;
+  error_message: string;
+  error_code?: string;
+} {
+  if (error instanceof Error) {
+    return { error_name: error.name, error_message: error.message };
+  }
+
+  if (error !== null && typeof error === 'object') {
+    const record = error as Record<string, unknown>;
+    const code = typeof record.code === 'string' ? record.code : undefined;
+    const message =
+      typeof record.message === 'string' ? record.message : safeStringify(error);
+    return {
+      error_name: typeof record.name === 'string' ? record.name : 'ObjectError',
+      error_message: message,
+      ...(code ? { error_code: code } : {}),
+    };
+  }
+
+  return { error_name: 'UnknownError', error_message: String(error) };
+}
+
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
 }

@@ -17,6 +17,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // `server-only` throws on import outside a React Server Component, which is
+      // its whole job — it guards the bundler. Under Vitest there is no bundler
+      // and no client boundary, so it is stubbed out. The protection that matters
+      // in production (the build error, plus the ESLint rule) is unaffected.
+      'server-only': fileURLToPath(new URL('./tests/stubs/server-only.ts', import.meta.url)),
     },
   },
 });

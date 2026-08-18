@@ -389,6 +389,58 @@ or removed from the nav before launch.
       document ticked this box, which was wrong.
 - [x] Deterministic seed data
 
+### MVP loop: questionnaire, QR, guest flow, results per question
+
+Phase 1 was redefined as a working MVP, which pulls in Phase 2, Phase 3 and part of Phase 6. The
+whole loop is built and verified end to end.
+
+**Standard questionnaire**
+
+- [x] `questionnaire_templates` / `_versions` / `questions` / `question_options`, plus
+      `location_questionnaire_assignments`
+- [x] Published versions are **immutable**, enforced by triggers — a published version cannot be
+      edited, cannot return to draft and cannot be deleted, not even by the service role
+- [x] Publishing refuses a version with no questions
+- [x] A published Dutch hospitality questionnaire ships in the seed: one rating, a diagnostic
+      follow-up below five stars, an appreciation question at five, and an optional comment
+- [x] Deterministic condition evaluator with 21 unit tests
+- [x] Assignment resolution is most-specific-wins, `location_id NULL` meaning every location
+
+**QR codes**
+
+- [x] Crockford Base32 printed codes and a 16-character URL token, both stored hashed **and**
+      encrypted — a hash cannot be reversed, so without the ciphertext a sticker could only be
+      downloaded in the minute it was created
+- [x] Download as SVG and PNG, error correction H, a 4-module quiet zone, PNG at 1024px, filename
+      carrying organization, location and campaign
+- [x] Reissue, which invalidates the old code — also the route for the seeded rows, which predate
+      encrypted storage and therefore cannot be downloaded until reissued
+- [x] Atomic scan counter in SQL rather than read-modify-write from the application
+
+**Guest flow at `/r/{token}`**
+
+- [x] `RatingControl`: cumulative fill, real radiogroup, arrow keys, one tab stop, nothing
+      preselected, and no reaction to a low score
+- [x] Conditional follow-ups using the same evaluator the server re-runs on submit, so the browser
+      cannot smuggle in an answer to a question it was never shown
+- [x] Idempotent submission — the session's unique key decides, not application logic
+- [x] IP and user agent stored hashed only
+- [x] Unknown, paused and expired all return one neutral message
+
+**Results per question**
+
+- [x] `question_results()` and `location_period_metrics()` in SQL, `SECURITY INVOKER` so RLS
+      applies to the caller
+- [x] Per-question respondent counts, per-option counts and shares, score distribution, headline
+      KPIs and recent comments on the location page
+- [x] Every share is of the people who answered *that* question, with its base printed beside it —
+      a conditional follow-up divided by everyone would understate every topic on it
+- [x] Feedback is append-only for the portal: no update or delete policy exists for any role
+
+Verified: 96 unit, 52 integration, 17 end-to-end, plus a manual pass of the whole loop — create a
+QR, download SVG and PNG, submit as a guest, type the printed code on the homepage, and see the
+comment appear in the results.
+
 ### Still open for Phase 1
 
 Verified against the repository, not against this checklist.
@@ -396,6 +448,8 @@ Verified against the repository, not against this checklist.
 | Gap | Why it matters |
 | --- | --- |
 | **Sentry not wired** | Named in Phase 1. Errors currently only reach the structured logger, so a production failure leaves no alert. |
+| **Rate limiting on the printed code** | A feedback code is ~40 bits, far weaker than the 95-bit URL token, and `lookupTokenForCode` is currently unthrottled. It needs a limit before launch. |
+| **Seeded QR codes cannot be downloaded** | They store only a hash, because the seed runs in SQL and AES-GCM does not. The portal shows a hint and offers reissue, which fixes them. |
 | **Password reset** | Phase 1 auth list. Now that password sign-in exists, someone who forgets one has no route back in. |
 | **Invite acceptance page** | An invited user lands on `/auth/callback` and is signed in, but has nowhere to set a name or a password — so they stay dependent on magic links. |
 | **Email verification** | `enable_confirmations = false` locally. Needs a decision plus a provider before staging. |
@@ -518,22 +572,35 @@ landed on the marketing host, where the portal session cookie does not apply —
 logged-out user. Redirects from route handlers now use a **relative** `Location`. Anything building
 an absolute URL from the request should be treated with suspicion in this multi-host setup.
 
-**14. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
+**14. A nullable column inside a composite foreign key makes PostgREST embeds return nothing.**
+`question_options` reaches `questions` through `(question_id, organization_id)`, and for a platform
+template `organization_id` is NULL on both sides. NULL never equals NULL, so the embed silently
+returned zero options and the guest saw a follow-up question with no answers to choose from — no
+error, just an empty array. Options are now fetched in a separate query. Any embed across a
+composite key with a nullable column deserves the same suspicion.
+
+**15. `revalidatePath` inside an action discards `useActionState`.** Both QR actions return secrets
+that exist nowhere else — the plain token and printed code are only stored hashed and encrypted.
+Revalidating replaced the route's payload and wiped that result, so the operator never saw the code
+they had to write down. Neither action revalidates now; the row derives its own state from the
+action result instead.
+
+**16. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
 `geefsterre.nl`; the design system, the repository name and the git remote all say `GeefSterren`.
 Confirmed with the product owner and applied throughout. `geefsterren.nl` still has to be acquired,
 with `geefsterre.nl` redirecting to it — see §16 of the design handoff.
 
-**15. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
+**17. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
 the tension to resolve before Phase 3: the design system treats Dutch consumer copy as a
 *functional* requirement — the tone rules are part of the brand promise — so the guest flow should
 default to `nl` for Dutch locations regardless of the portal's locale.
 
-**16. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
+**18. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
 looks exactly like an application error. Local development therefore runs on **5010**, which is
 free. Anyone changing the port must update the three `NEXT_PUBLIC_*_URL` values with it: the proxy
 decides marketing vs portal by comparing the request host against `NEXT_PUBLIC_PORTAL_URL`, so a
 mismatched port silently sends every portal request to the marketing site.
 
-**17. Default branch is `production`.** Committing feature work straight onto `production` in a repo
+**19. Default branch is `production`.** Committing feature work straight onto `production` in a repo
 wired to Vercel would deploy it. `main` should be created and set as the default before any
 deployment integration is connected.
