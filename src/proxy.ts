@@ -16,6 +16,7 @@ import { updateSupabaseSession } from '@/lib/supabase/middleware';
  */
 
 const PORTAL_PREFIX = '/app';
+const ADMIN_PREFIX = '/admin';
 const AUTH_PREFIX = '/auth';
 
 /** Paths that must stay reachable without a session, even on the portal host. */
@@ -40,9 +41,12 @@ export default async function proxy(request: NextRequest) {
   }
 
   if (hostKind === 'marketing') {
-    // The portal is not served from the marketing host; send those requests to the real portal
-    // rather than rendering a second copy under a different origin.
-    if (nextUrl.pathname.startsWith(PORTAL_PREFIX)) {
+    // Neither the portal nor platform administration is served from the marketing host; send those
+    // requests to the real portal rather than rendering a second copy under a different origin.
+    if (
+      nextUrl.pathname.startsWith(PORTAL_PREFIX) ||
+      nextUrl.pathname.startsWith(ADMIN_PREFIX)
+    ) {
       const target = new URL(nextUrl.pathname + nextUrl.search, env.NEXT_PUBLIC_PORTAL_URL);
       return NextResponse.redirect(target);
     }
@@ -63,7 +67,10 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(target);
   }
 
-  if (!user && nextUrl.pathname.startsWith(PORTAL_PREFIX)) {
+  if (
+    !user &&
+    (nextUrl.pathname.startsWith(PORTAL_PREFIX) || nextUrl.pathname.startsWith(ADMIN_PREFIX))
+  ) {
     const target = nextUrl.clone();
     target.pathname = `${AUTH_PREFIX}/sign-in`;
     // Preserve the intended destination so sign-in can return the user to it.

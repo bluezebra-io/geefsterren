@@ -11,7 +11,7 @@ import type { EntityStatus } from '@/types/domain';
 export const metadata = { title: 'Overview — GeefSterren' };
 
 export default async function PortalOverviewPage() {
-  const [{ actor, organizationId }, t] = await Promise.all([getPortalContext(), getMessages()]);
+  const [{ organizationId }, t] = await Promise.all([getPortalContext(), getMessages()]);
 
   if (!organizationId) {
     return (

@@ -54,6 +54,11 @@ export const nl: Messages = {
     errorMissingCode: 'Deze link is onvolledig. Vraag een nieuwe inloglink aan.',
     errorInvalidCode: 'Deze link is verlopen of al gebruikt. Vraag een nieuwe aan.',
     errorGeneric: 'Er ging iets mis tijdens het inloggen.',
+    passwordLabel: 'Wachtwoord',
+    signInWithPassword: 'Inloggen',
+    orMagicLink: 'Liever geen wachtwoord?',
+    sendLinkInstead: 'Mail mij een inloglink',
+    credentialsError: 'Dit e-mailadres en wachtwoord horen niet bij een account',
     backToSignIn: 'Terug naar inloggen',
   },
 

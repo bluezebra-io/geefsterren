@@ -50,6 +50,11 @@ export const en = {
     errorMissingCode: 'That link is incomplete. Request a new sign-in link and try again.',
     errorInvalidCode: 'That link has expired or has already been used. Request a new one.',
     errorGeneric: 'Something went wrong while signing you in.',
+    passwordLabel: 'Password',
+    signInWithPassword: 'Sign in',
+    orMagicLink: 'Rather not use a password?',
+    sendLinkInstead: 'Email me a sign-in link',
+    credentialsError: 'That email address and password do not match an account',
     backToSignIn: 'Back to sign in',
   },
 

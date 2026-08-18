@@ -318,6 +318,44 @@ Two honest gaps, both visible in the UI rather than papered over:
 email and encrypted address storage from Phase 4. A form that silently discarded email addresses
 would be worse than its absence.
 
+### Password sign-in
+
+Added because the portal should not *depend* on mail delivery to let someone in — no email provider
+is configured yet, and magic links are unusable without one outside local development.
+
+- [x] Route handler at `/api/portal/sign-in`, not a Server Action: writing auth cookies and then
+      redirecting from an action leaves the destination render without the session it just created
+- [x] Plain form post, so it works with JavaScript disabled — covered by a test that runs with JS off
+- [x] Identical message for a wrong password, an unknown address and an unconfirmed account, so the
+      form is not an account-enumeration oracle — asserted in two tests
+- [x] Magic link retained as the invitation route and the no-password option
+
+Still required before staging: a real provider (`EMAIL_PROVIDER=resend`, `RESEND_API_KEY`) for
+invitations, password reset and verification. Password length is validated where a password is
+*chosen*, never at sign-in, where a length complaint would leak which guesses could be real.
+
+### Platform administration and participant context
+
+The `platform_admin` role, its RLS policies and a seeded account existed from Phase 1. Two things
+did not, and both are now built.
+
+- [x] `/admin`: every organization with location and member counts, platform-staff only, guarded at
+      the layout so the check lives at the boundary
+- [x] Opening a participant sets a validated, session-scoped cookie; the portal then renders that
+      organization
+- [x] An amber banner names whose data is on screen, with a one-click exit
+- [x] Every enter and exit by platform staff writes an audit entry naming the real user
+- [x] `/admin` added to the portal-host routing in the proxy
+- [x] Unit tests for the context rules, plus a browser test for the whole switch
+
+This is a **context switch, not impersonation**. The signed-in user stays themselves: RLS evaluates
+their real `auth.uid()` and audit entries name them. Nothing mints a session for another user, so an
+action taken while viewing a participant can never be misattributed to that participant's staff.
+
+A true "log in as this user" would need session minting plus a way to reproduce that user's exact
+permissions, and it would break audit attribution by design. Worth a deliberate decision rather than
+an accident; not built.
+
 ### Playwright smoke suite
 
 Brought forward from Phase 8 because it is what would have caught the 500 described in risk 9.
@@ -342,12 +380,34 @@ or removed from the nav before launch.
 - [x] Host-based middleware routing (marketing vs portal)
 - [x] Migrations 0001–0005 (tenancy, helpers, policies, audit)
 - [x] RLS helper functions + policies for core tables
-- [x] Auth: magic link, callback, sign-out, invite acceptance
+- [x] Auth: password sign-in, magic link, callback, sign-out, invite acceptance
 - [x] Organizations, locations, memberships services + portal pages
 - [x] Audit logging for membership and location changes
 - [x] Vitest + unit tests for phase-1 domain logic
-- [x] Sentry wiring (guarded — no-ops without a DSN)
+- [ ] Sentry — **not built.** Only `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` validation exists in
+      `lib/env.ts`; there is no package, no config and no capture. An earlier revision of this
+      document ticked this box, which was wrong.
 - [x] Deterministic seed data
+
+### Still open for Phase 1
+
+Verified against the repository, not against this checklist.
+
+| Gap | Why it matters |
+| --- | --- |
+| **Sentry not wired** | Named in Phase 1. Errors currently only reach the structured logger, so a production failure leaves no alert. |
+| **Password reset** | Phase 1 auth list. Now that password sign-in exists, someone who forgets one has no route back in. |
+| **Invite acceptance page** | An invited user lands on `/auth/callback` and is signed in, but has nowhere to set a name or a password — so they stay dependent on magic links. |
+| **Email verification** | `enable_confirmations = false` locally. Needs a decision plus a provider before staging. |
+| **`updateProfileAction` is dead code** | Written in `features/auth/actions.ts`, never rendered anywhere. Either give it a settings screen or delete it. |
+| **No CI workflow** | `docs/testing.md` describes typecheck → lint → unit → integration → build on every pull request. Nothing runs it. |
+| **No `vercel.json`** | `docs/deployment.md` documents the cron entries and the file does not exist. The endpoints arrive in Phases 6–7, but the doc currently promises a file that is missing. |
+
+Deliberate deviation, not a gap: **shadcn/ui is not installed.** The design system overrides
+shadcn's defaults on nearly every value it specifies (44px controls, 10px radius, ink-on-amber,
+its own focus treatment), so the primitives are written directly against the tokens. Radix is worth
+adding when the first component that genuinely needs it lands — Dialog, Tabs or Select with a
+listbox. Nothing built so far did.
 
 ### Phase 2 — Questionnaires and campaigns
 - [ ] Templates, versioning, publish + immutability triggers
@@ -446,22 +506,34 @@ failed build rather than a slow page. Vercel is fine; an air-gapped or flaky CI 
 recurs, vendor the two families into `public/fonts` and switch to `next/font/local` — the design
 handoff already recommends self-hosting.
 
-**12. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
+**12. Setting a cookie and redirecting in one Server Action broke the destination render.** Next
+renders the redirect target inside the action's own response, and that render came back as the
+sign-in page — a manual reload of the same URL was fine. Replaced with a route handler that answers
+a plain 303, so the browser makes a clean follow-up request. It also removed a hydration race: the
+control is now a plain form post that works without JavaScript.
+
+**13. `request.nextUrl.origin` is not the host the client is on.** For a request that arrived at
+`app.localhost:5010` it produced `http://localhost:5010`, so an absolute redirect built from it
+landed on the marketing host, where the portal session cookie does not apply — presenting as a
+logged-out user. Redirects from route handlers now use a **relative** `Location`. Anything building
+an absolute URL from the request should be treated with suspicion in this multi-host setup.
+
+**14. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
 `geefsterre.nl`; the design system, the repository name and the git remote all say `GeefSterren`.
 Confirmed with the product owner and applied throughout. `geefsterren.nl` still has to be acquired,
 with `geefsterre.nl` redirecting to it — see §16 of the design handoff.
 
-**13. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
+**15. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
 the tension to resolve before Phase 3: the design system treats Dutch consumer copy as a
 *functional* requirement — the tone rules are part of the brand promise — so the guest flow should
 default to `nl` for Dutch locations regardless of the portal's locale.
 
-**14. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
+**16. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
 looks exactly like an application error. Local development therefore runs on **5010**, which is
 free. Anyone changing the port must update the three `NEXT_PUBLIC_*_URL` values with it: the proxy
 decides marketing vs portal by comparing the request host against `NEXT_PUBLIC_PORTAL_URL`, so a
 mismatched port silently sends every portal request to the marketing site.
 
-**15. Default branch is `production`.** Committing feature work straight onto `production` in a repo
+**17. Default branch is `production`.** Committing feature work straight onto `production` in a repo
 wired to Vercel would deploy it. `main` should be created and set as the default before any
 deployment integration is connected.

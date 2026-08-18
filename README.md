@@ -124,15 +124,43 @@ Local only. Password for all of them: `LocalDev!2026`.
 
 | Email | Role |
 | --- | --- |
-| `platform.admin@geefsterren.test` | Platform administrator |
+| `platform.admin@geefsterren.test` | Platform administrator (super admin) |
+| `super.admin@geefsterren.test` | Platform administrator (super admin) |
 | `platform.support@geefsterren.test` | Platform support (read-only) |
 | `org.admin@bakkerij.test` | Organization administrator, Bakkerij De Korenaar |
 | `manager.leiden@bakkerij.test` | Location manager, Leiden only |
 | `viewer@bakkerij.test` | Viewer |
 | `org.admin@pizzeria.test` | Organization administrator, Pizzeria Napoli |
+| `eigenaar@sushinoord.test` | Organization administrator, Sushi Noord |
+| `manager@sushinoord.test` | Location manager, Sushi Noord Groningen only |
 
-Two organizations exist on purpose: cross-tenant isolation is not testable without a neighbour to
+Three organizations exist on purpose: cross-tenant isolation is not testable without a neighbour to
 leak to.
+
+### Signing in
+
+Two routes, both live:
+
+- **Password** — email plus password on the sign-in form. Needs no mail delivery, works with
+  JavaScript disabled. This is the practical route locally.
+- **Magic link** — "Mail mij een inloglink". Locally the mail lands in Mailpit at
+  http://127.0.0.1:54324; there is no external mail server to configure for local development.
+
+Invitations still go out by email, so a real provider (`EMAIL_PROVIDER=resend` plus
+`RESEND_API_KEY`) is required before staging and production. Until one is configured, create
+accounts through the seed or promote them with SQL, and use password sign-in.
+
+Wrong password, unknown address and unconfirmed account all return the same message on purpose, so
+the form cannot be used to discover which addresses have accounts.
+
+### Opening a participant as a super admin
+
+Sign in as a platform administrator and go to **http://app.localhost:5010/admin**. Every
+organization is listed; "Openen" switches the portal into it and an amber banner names whose data
+you are looking at.
+
+This is a context switch, not impersonation — you stay yourself, RLS still evaluates your own user,
+and both entering and leaving are written to `audit_logs`.
 
 ## Tests
 

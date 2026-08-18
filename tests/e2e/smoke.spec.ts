@@ -57,7 +57,9 @@ test.describe('portal', () => {
   test('sign-in renders', async ({ page }) => {
     const response = await page.goto(`${PORTAL_HOST}/auth/sign-in`);
     expect(response?.status()).toBe(200);
-    await expect(page.locator('input[name="email"]')).toBeVisible();
+    // By role, not by name: the magic-link form carries a hidden input named
+    // "email" too, so a name selector matches two elements.
+    await expect(page.getByRole('textbox', { name: /e-mailadres|email address/i })).toBeVisible();
   });
 
   test('an unauthenticated visit to /app redirects to sign-in', async ({ page }) => {
