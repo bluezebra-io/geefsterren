@@ -199,3 +199,44 @@ describe('submission idempotency', () => {
     await service.from('feedback_sessions').delete().eq('idempotency_key', key);
   });
 });
+
+describe('questionnaire names survive the nullable composite foreign key', () => {
+  it('resolves the platform template name, which an embed cannot', async () => {
+    /*
+     * The regression this guards: the questionnaire tables are chained by
+     * composite foreign keys including `organization_id`, which is NULL for a
+     * platform template. A PostgREST embed across them returns null for the
+     * parent — silently, with no error — and the portal showed a questionnaire
+     * called "—". It happened three times in three different queries before the
+     * join was moved into one helper.
+     */
+    const client = serviceClient();
+
+    const embedded = await client
+      .from('questionnaire_versions')
+      .select('id, questionnaire_templates(name)')
+      .eq('id', '77777777-7777-4777-8777-000000000001')
+      .single();
+
+    expect(embedded.error).toBeNull();
+    // Still null: this is the trap, documented here so nobody "fixes" the helper
+    // by going back to an embed.
+    expect(embedded.data?.questionnaire_templates).toBeNull();
+
+    // Two queries do give the name.
+    const version = await client
+      .from('questionnaire_versions')
+      .select('questionnaire_template_id')
+      .eq('id', '77777777-7777-4777-8777-000000000001')
+      .single();
+
+    const template = await client
+      .from('questionnaire_templates')
+      .select('name, organization_id')
+      .eq('id', version.data!.questionnaire_template_id)
+      .single();
+
+    expect(template.data?.organization_id).toBeNull();
+    expect(template.data?.name).toBe('Standaard horeca-vragenlijst');
+  });
+});

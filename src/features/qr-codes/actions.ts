@@ -12,6 +12,7 @@ import { decryptValue, encryptValue } from '@/lib/security/encryption';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
+import { actionErrors } from '@/lib/i18n/errors';
 import { actionError, actionOk, type ActionResult } from '@/types/domain';
 
 import { feedbackUrlFor, isValidFeedbackCodeFormat, normalizeFeedbackCode } from './service';
@@ -60,7 +61,7 @@ export async function createQrCodeAction(
   });
 
   if (!parsed.success) {
-    return actionError('Check the form and try again', toFieldErrors(parsed.error));
+    return actionError((await actionErrors()).checkForm, toFieldErrors(parsed.error));
   }
 
   const input = parsed.data;
@@ -135,7 +136,7 @@ export async function createQrCodeAction(
       location_id: input.locationId,
       ...describeError(error),
     });
-    return actionError('Could not create this QR code');
+    return actionError((await actionErrors()).qrCreate);
   }
 }
 
@@ -157,7 +158,7 @@ export async function rotateQrCodeAction(
     qrCodeId: formData.get('qrCodeId'),
     locationId: formData.get('locationId'),
   });
-  if (!parsed.success) return actionError('Invalid request');
+  if (!parsed.success) return actionError((await actionErrors()).invalidRequest);
 
   try {
     await requireActor();
@@ -179,7 +180,7 @@ export async function rotateQrCodeAction(
       .maybeSingle();
 
     if (error) throw error;
-    if (!data) return actionError('You do not have permission to change this QR code');
+    if (!data) return actionError((await actionErrors()).noPermission);
 
     await writeAuditLog({
       action: 'qr_code.rotated',
@@ -200,7 +201,7 @@ export async function rotateQrCodeAction(
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
     logger.error('qr code rotation failed', { ...describeError(error) });
-    return actionError('Could not reissue this QR code');
+    return actionError((await actionErrors()).qrRotate);
   }
 }
 

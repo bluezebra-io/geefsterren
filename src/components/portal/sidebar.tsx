@@ -47,6 +47,7 @@ export function Sidebar({
   // Listed but not yet routed: these land with their own phases. Showing them
   // as disabled would be noise, so they simply are not rendered yet.
   const manage: NavEntry[] = [
+    { href: '/app/questionnaires', label: t.nav.questionnaires, icon: MessageSquareQuote },
     { href: '/app/settings/users', label: t.nav.users, icon: Users },
     // Only platform staff have anywhere to go here, and for them it is the way
     // back out of a participant's organization.

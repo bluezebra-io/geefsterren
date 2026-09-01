@@ -413,8 +413,13 @@ whole loop is built and verified end to end.
       downloaded in the minute it was created
 - [x] Download as SVG and PNG, error correction H, a 4-module quiet zone, PNG at 1024px, filename
       carrying organization, location and campaign
-- [x] Reissue, which invalidates the old code — also the route for the seeded rows, which predate
-      encrypted storage and therefore cannot be downloaded until reissued
+- [x] Reissue, which invalidates the old code — for a leaked or reprinted sticker
+- [x] `npm run db:reset` runs `scripts/seed-qr-secrets.mjs` afterwards, so the seeded QR codes are
+      downloadable straight away. The seed can hash a token with pgcrypto but cannot produce an
+      AES-GCM envelope, which made the first thing anyone tries in the portal the one thing that
+      failed. The script imports the application's own envelope from `lib/security/aes-gcm.ts`, and
+      a unit test asserts a value it writes is readable by the app — so the two entry points cannot
+      drift apart silently
 - [x] Atomic scan counter in SQL rather than read-modify-write from the application
 
 **Guest flow at `/r/{token}`**
@@ -441,6 +446,41 @@ Verified: 96 unit, 52 integration, 17 end-to-end, plus a manual pass of the whol
 QR, download SVG and PNG, submit as a guest, type the printed code on the homepage, and see the
 comment appear in the results.
 
+**Authoring UI**
+
+- [x] `/app/questionnaires`: every questionnaire this organization may see, including the platform
+      template, with each version's status, question count and where it is assigned
+- [x] `/app/questionnaires/[versionId]`: add and remove questions with options, publish, and assign
+- [x] Question keys are derived from the question, so nobody has to invent one
+- [x] Options are entered one per line; keys are derived and duplicates dropped
+- [x] "Only ask below five stars" writes the documented `condition_json` — the one branching the
+      specification calls for. An arbitrary rule builder is not exposed: it would be a lot of UI
+      guarding a lot of ways to configure something incoherent
+- [x] Publishing asks for confirmation, because it cannot be undone
+- [x] A published version is read-only in the UI as well as in the database; **New draft** copies it
+      into the next version, which is the only route to changing questions
+- [x] Assignment is **every location** (one row, null location), **a selection**, or **none**
+- [x] Platform templates are read-only for an organization; it copies one into its own draft
+- [x] A viewer sees the questionnaires and none of the controls
+
+**Campaigns**
+
+- [x] `/app/locations/[locationId]/campaigns`: list, create, activate, pause, complete
+- [x] Only **published** questionnaires can be chosen — a draft could still change, which would move
+      the ground under answers already collected
+- [x] The questionnaire assigned to that location is preselected, so nobody has to match it up
+- [x] Pausing stops new sessions without invalidating the printed sticker: `resolveQrToken` refuses
+      a campaign that is not active, and activating brings the same QR back
+- [x] Location managers can run campaigns for their own location; the RLS insert policy uses
+      `can_manage_location`
+- [x] The QR page's "create a campaign first" warning now links to where that happens — before this
+      it was a dead end, which is how it was found
+
+Deliberately absent: the `google_review_invitation_enabled` control. Turning it on is only meaningful
+once Review Acquisition Readiness exists to gate it (Phase 5), and a switch that appears to enable
+the Google invitation while nothing evaluates readiness would be the one thing this product must not
+get wrong.
+
 ### Still open for Phase 1
 
 Verified against the repository, not against this checklist.
@@ -449,7 +489,6 @@ Verified against the repository, not against this checklist.
 | --- | --- |
 | **Sentry not wired** | Named in Phase 1. Errors currently only reach the structured logger, so a production failure leaves no alert. |
 | **Rate limiting on the printed code** | A feedback code is ~40 bits, far weaker than the 95-bit URL token, and `lookupTokenForCode` is currently unthrottled. It needs a limit before launch. |
-| **Seeded QR codes cannot be downloaded** | They store only a hash, because the seed runs in SQL and AES-GCM does not. The portal shows a hint and offers reissue, which fixes them. |
 | **Password reset** | Phase 1 auth list. Now that password sign-in exists, someone who forgets one has no route back in. |
 | **Invite acceptance page** | An invited user lands on `/auth/callback` and is signed in, but has nowhere to set a name or a password — so they stay dependent on magic links. |
 | **Email verification** | `enable_confirmations = false` locally. Needs a decision plus a provider before staging. |
@@ -573,6 +612,10 @@ logged-out user. Redirects from route handlers now use a **relative** `Location`
 an absolute URL from the request should be treated with suspicion in this multi-host setup.
 
 **14. A nullable column inside a composite foreign key makes PostgREST embeds return nothing.**
+*Bit three times, in three different queries, before being dealt with properly.* The join now lives
+once in `features/questionnaires/labels.ts`, and an integration test pins the trap in place so nobody
+"simplifies" it back into an embed.
+
 `question_options` reaches `questions` through `(question_id, organization_id)`, and for a platform
 template `organization_id` is NULL on both sides. NULL never equals NULL, so the embed silently
 returned zero options and the guest saw a follow-up question with no answers to choose from — no
@@ -585,22 +628,43 @@ Revalidating replaced the route's payload and wiped that result, so the operator
 they had to write down. Neither action revalidates now; the row derives its own state from the
 action result instead.
 
-**16. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
+**16. One active assignment per *scope*, not per version.** The first version of
+`assignVersionAction` only deactivated rows for the version being assigned, so pointing a location
+at a second questionnaire hit the partial unique index every time — which is the ordinary case of
+switching questionnaires, not an edge case. It now clears whatever occupies the target scope,
+whichever version that is, and assigning organization-wide also clears the per-location rows that
+would otherwise silently override it.
+
+**17. `supabase db reset` restarts the auth container, and tests run straight after it fail.**
+Integration tests come back as *skipped* (the `beforeAll` sign-in throws) and roughly a third of the
+end-to-end suite fails on redirects to the sign-in page. Nothing is wrong with the code; GoTrue is
+still booting. Wait for a password grant to succeed before running the suites after a reset.
+
+**18. Action error messages were English literals.** A Dutch operator got "Could not create this
+campaign" — wrong language, and it said nothing they could act on or report. Actions now read the
+message catalogue through `lib/i18n/errors.ts`. Anything user-facing returned from a Server Action
+should go through it.
+
+**19. Integration tests must not assert seed contents.** Granting a colleague an extra location
+through the portal — the feature working — broke an RLS assertion that hardcoded who could see what.
+Those expectations are now derived from the database, so they test the rule rather than the fixture.
+
+**20. Brand name resolved to `GeefSterren`.** The original specification said `GeefSterre` /
 `geefsterre.nl`; the design system, the repository name and the git remote all say `GeefSterren`.
 Confirmed with the product owner and applied throughout. `geefsterren.nl` still has to be acquired,
 with `geefsterre.nl` redirecting to it — see §16 of the design handoff.
 
-**17. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
+**21. Language default is English, Dutch is a full translation.** Chosen by the product owner. Note
 the tension to resolve before Phase 3: the design system treats Dutch consumer copy as a
 *functional* requirement — the tone rules are part of the brand promise — so the guest flow should
 default to `nl` for Dutch locations regardless of the portal's locale.
 
-**18. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
+**22. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
 looks exactly like an application error. Local development therefore runs on **5010**, which is
 free. Anyone changing the port must update the three `NEXT_PUBLIC_*_URL` values with it: the proxy
 decides marketing vs portal by comparing the request host against `NEXT_PUBLIC_PORTAL_URL`, so a
 mismatched port silently sends every portal request to the marketing site.
 
-**19. Default branch is `production`.** Committing feature work straight onto `production` in a repo
+**23. Default branch is `production`.** Committing feature work straight onto `production` in a repo
 wired to Vercel would deploy it. `main` should be created and set as the default before any
 deployment integration is connected.

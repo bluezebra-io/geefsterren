@@ -160,14 +160,29 @@ campaign and QR code per location and about 170 sample responses.
 
 1. **See results.** Sign in and open a location — headline KPIs, score distribution and results per
    question, each with the base it is calculated on.
-2. **Get a QR.** Location → **QR-codes** → create one. The plain token and printed code are shown
+2. **Set up a campaign.** Location → **Campagnes** → create one. A campaign is what a QR code
+   points at: it sets the questionnaire and whether feedback is being collected. Pausing it stops
+   new feedback without invalidating anything already printed.
+3. **Get a QR.** Location → **QR-codes** → create one. The plain token and printed code are shown
    **once**; both are stored hashed for lookup and encrypted for reprinting.
-3. **Leave feedback.** Open the review link, or type the printed code in the field on the homepage.
-4. **Watch it land.** The answer appears in the results per question straight away.
+4. **Leave feedback.** Open the review link, or type the printed code in the field on the homepage.
+5. **Watch it land.** The answer appears in the results per question straight away.
 
-The three seeded QR codes predate encrypted storage — the seed runs in SQL, which cannot do
-AES-GCM — so they cannot be downloaded until you press **Opnieuw uitgeven**. Their tokens are in
-`supabase/seed.sql` if you want to open one by hand.
+`npm run db:reset` finishes by running `scripts/seed-qr-secrets.mjs`, which gives the seeded QR
+codes their tokens and printed codes — so they are downloadable immediately. It prints them:
+
+```text
+Bezorgdoos Leiden      code KRN2AB34  /r/DemoLeiden00001
+Kassabon Rotterdam     code RTM5CD67  /r/DemoRotterdam001
+Tafelkaart Groningen   code GRN4GH56  /r/DemoGroningen001
+```
+
+The step is separate because `seed.sql` can hash a token with pgcrypto but cannot produce the
+AES-GCM envelope the reprint needs.
+
+**Editing the questions.** Portal → **Vragenlijsten**. Start a new draft from the platform
+template or create your own, add questions, publish, then assign it to every location or to a
+selection. Only an organization administrator or a platform administrator can author.
 
 Published questionnaire versions are immutable. That is what lets a response from six months ago
 still be read correctly: answers reference question ids, so a label or option that could change
@@ -190,6 +205,10 @@ npm run test:integration  # RLS + database policies (needs the local stack runni
 npm run typecheck
 npm run lint
 ```
+
+`supabase db reset` restarts the auth container, so a suite started immediately after it will fail
+on sign-in — integration tests report as *skipped*, end-to-end tests redirect to the sign-in page.
+Give GoTrue a few seconds.
 
 RLS tests run against real PostgreSQL through the anon key with real sessions. Policies cannot be
 mocked — a mocked policy proves nothing. Details in [docs/testing.md](docs/testing.md).

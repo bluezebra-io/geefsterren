@@ -1,6 +1,51 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { anonClient, SEED, signedInClient, type TestClient } from './helpers';
+import { anonClient, SEED, serviceClient, signedInClient, type TestClient } from './helpers';
+
+/**
+ * The locations a user should be able to see, read from the database.
+ *
+ * These assertions used to hardcode the seed contents, so the moment somebody
+ * granted a colleague an extra location through the portal — which is the feature
+ * working — the suite failed. Deriving the expectation tests the *rule* (you see
+ * exactly what you are assigned) instead of the fixture.
+ */
+async function expectedLocationsFor(email: string): Promise<string[]> {
+  const service = serviceClient();
+
+  const { data: users } = await service.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const id = users.users.find((candidate) => candidate.email === email)?.id;
+  if (!id) throw new Error(`No such user: ${email}`);
+
+  const [{ data: orgRoles }, { data: locationRoles }] = await Promise.all([
+    service
+      .from('organization_memberships')
+      .select('organization_id, role')
+      .eq('user_id', id)
+      .eq('status', 'active'),
+    service
+      .from('location_memberships')
+      .select('location_id')
+      .eq('user_id', id)
+      .eq('status', 'active'),
+  ]);
+
+  // An organization administrator reaches every location in that organization by
+  // role; everyone else reaches exactly their assigned locations.
+  const adminOrgs = (orgRoles ?? []).filter((row) => row.role === 'org_admin');
+  const visible = new Set((locationRoles ?? []).map((row) => row.location_id));
+
+  for (const org of adminOrgs) {
+    const { data: locations } = await service
+      .from('locations')
+      .select('id')
+      .eq('organization_id', org.organization_id)
+      .is('archived_at', null);
+    for (const location of locations ?? []) visible.add(location.id);
+  }
+
+  return [...visible].sort();
+}
 
 /**
  * RLS integration tests.
@@ -34,7 +79,10 @@ describe('1. organization A cannot read organization B', () => {
   it('sees only its own organization', async () => {
     const { data, error } = await orgAdminA.from('organizations').select('id');
     expect(error).toBeNull();
-    expect(data?.map((row) => row.id)).toEqual([SEED.organizations.a]);
+    // The isolation property, not a fixture count: whatever it can see, the other
+    // organization is not in it.
+    expect(data?.map((row) => row.id)).toContain(SEED.organizations.a);
+    expect(data?.map((row) => row.id)).not.toContain(SEED.organizations.b);
   });
 
   it('gets no row when asking for the other organization by id', async () => {
@@ -56,17 +104,32 @@ describe('1. organization A cannot read organization B', () => {
 });
 
 describe('2. location manager A cannot access location B', () => {
-  it('reads only its assigned location', async () => {
+  it('reads exactly the locations it is assigned', async () => {
     const { data, error } = await locationManager.from('locations').select('id');
     expect(error).toBeNull();
-    expect(data?.map((row) => row.id)).toEqual([SEED.locations.leiden]);
+    expect(data?.map((row) => row.id).sort()).toEqual(
+      await expectedLocationsFor(SEED.users.locationManagerLeiden),
+    );
   });
 
-  it('cannot read an unassigned location in the same organization', async () => {
-    const { data } = await locationManager
+  it('cannot read a location in the same organization it is not assigned to', async () => {
+    // Which location that is depends on who has been granted what, so it is
+    // looked up rather than assumed.
+    const assigned = await expectedLocationsFor(SEED.users.locationManagerLeiden);
+    const { data: all } = await serviceClient()
       .from('locations')
       .select('id')
-      .eq('id', SEED.locations.rotterdam);
+      .eq('organization_id', SEED.organizations.a);
+
+    const unassigned = (all ?? []).map((row) => row.id).find((id) => !assigned.includes(id));
+    if (!unassigned) {
+      throw new Error(
+        'This manager is assigned to every location, so the isolation it guards cannot be observed. ' +
+          'Remove one assignment, or run npm run db:reset.',
+      );
+    }
+
+    const { data } = await locationManager.from('locations').select('id').eq('id', unassigned);
     expect(data).toEqual([]);
   });
 
@@ -92,9 +155,11 @@ describe('2. location manager A cannot access location B', () => {
 });
 
 describe('3. a viewer cannot modify configuration', () => {
-  it('can read its assigned location', async () => {
+  it('can read exactly the locations it is assigned', async () => {
     const { data } = await viewer.from('locations').select('id');
-    expect(data?.map((row) => row.id)).toEqual([SEED.locations.leiden]);
+    expect(data?.map((row) => row.id).sort()).toEqual(
+      await expectedLocationsFor(SEED.users.viewerA),
+    );
   });
 
   it('cannot update a location', async () => {
@@ -151,7 +216,10 @@ describe('4. an organization administrator cannot reach another organization', (
 
   it('is symmetric — B cannot reach A', async () => {
     const { data } = await orgAdminB.from('locations').select('id');
-    expect(data?.map((row) => row.id)).toEqual([SEED.locations.napoli]);
+    const visible = data?.map((row) => row.id) ?? [];
+    expect(visible).toContain(SEED.locations.napoli);
+    expect(visible).not.toContain(SEED.locations.leiden);
+    expect(visible).not.toContain(SEED.locations.rotterdam);
   });
 });
 

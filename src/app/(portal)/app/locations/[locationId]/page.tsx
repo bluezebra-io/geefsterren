@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { QrCode } from 'lucide-react';
+import { Megaphone, QrCode } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button';
 
@@ -68,6 +68,13 @@ export default async function LocationDetailPage({
           <Badge tone={location.status === 'active' ? 'success' : 'neutral'}>
             {statusLabel[location.status]}
           </Badge>
+          <Link
+            href={`/app/locations/${locationId}/campaigns`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Megaphone aria-hidden="true" className="size-4" />
+            {t.campaigns.title}
+          </Link>
           <Link
             href={`/app/locations/${locationId}/qr-codes`}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}

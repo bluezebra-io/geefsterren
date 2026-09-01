@@ -1,8 +1,12 @@
 import 'server-only';
 
-import { createHash, randomInt } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 
 import { FEEDBACK_CODE_ALPHABET, FEEDBACK_CODE_LENGTH } from './service';
+
+// Re-exported so callers that mint a secret and callers that look one up share
+// exactly one hash function.
+export { hashSecret } from '@/lib/security/encryption';
 
 /**
  * QR secrets.
@@ -52,11 +56,3 @@ export function generateFeedbackCode(): string {
   return randomFrom(FEEDBACK_CODE_ALPHABET, FEEDBACK_CODE_LENGTH);
 }
 
-/**
- * SHA-256, unsalted and deliberately so: the lookup is `hash(input) = stored`,
- * which a per-row salt would make impossible. Safe here because both values are
- * high-entropy random strings, not passwords — there is no dictionary to run.
- */
-export function hashSecret(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}

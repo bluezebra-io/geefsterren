@@ -34,6 +34,8 @@ const PORTAL_KEYS = [
   'platform',
   'results',
   'qr',
+  'questionnaires',
+  'campaigns',
 ] as const satisfies readonly (keyof Messages)[];
 
 export type PublicMessages = Pick<Messages, (typeof PUBLIC_KEYS)[number]>;

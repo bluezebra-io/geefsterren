@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { QrCode } from 'lucide-react';
 
@@ -77,7 +78,16 @@ export default async function QrCodesPage({
           </CardHeader>
           <CardBody>
             {campaigns.length === 0 ? (
-              <Alert tone="warning">{t.qr.noCampaign}</Alert>
+              /* A dead end otherwise: this page cannot do anything without a
+                 campaign, so it links straight to where one is made. */
+              <Alert tone="warning" title={t.qr.noCampaign}>
+                <Link
+                  href={`/app/locations/${locationId}/campaigns`}
+                  className="font-semibold underline"
+                >
+                  {t.campaigns.createTitle}
+                </Link>
+              </Alert>
             ) : (
               <CreateQrCodeForm locationId={locationId} campaigns={campaigns} />
             )}

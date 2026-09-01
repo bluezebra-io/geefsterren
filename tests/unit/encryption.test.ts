@@ -69,3 +69,24 @@ describe('isEncryptedValue', () => {
     expect(isEncryptedValue('')).toBe(false);
   });
 });
+
+describe('the seed helper produces the same envelope as the application', () => {
+  it('decrypts a value encrypted with the raw key API', async () => {
+    // `scripts/seed-qr-secrets.mjs` imports `aes-gcm.ts` directly and passes the
+    // key itself. This asserts the two entry points cannot drift: a value written
+    // by the seed helper must be readable by the app, or the seeded QR codes would
+    // be undownloadable again without anything failing loudly.
+    const { encryptWithKey } = await import('@/lib/security/aes-gcm');
+    const key = Buffer.from(process.env.APP_ENCRYPTION_KEY!, 'base64');
+
+    const payload = encryptWithKey('DemoLeiden00001', key);
+    expect(decryptValue(payload)).toBe('DemoLeiden00001');
+  });
+
+  it('rejects a value encrypted with a different key', async () => {
+    const { encryptWithKey } = await import('@/lib/security/aes-gcm');
+    const otherKey = Buffer.alloc(32, 7);
+
+    expect(() => decryptValue(encryptWithKey('secret', otherKey))).toThrow();
+  });
+});
