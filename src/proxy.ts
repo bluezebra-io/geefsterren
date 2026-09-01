@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { classifyHost } from '@/lib/hosts';
 import { updateSupabaseSession } from '@/lib/supabase/middleware';
 
@@ -31,8 +31,8 @@ function isPublicPath(pathname: string): boolean {
 
 export default async function proxy(request: NextRequest) {
   const { nextUrl } = request;
-  const env = clientEnv();
-  const hostKind = classifyHost(request.headers.get('host'), env.NEXT_PUBLIC_PORTAL_URL);
+  const env = appConfig();
+  const hostKind = classifyHost(request.headers.get('host'), env.PORTAL_URL);
 
   // The public feedback flow is deliberately handled before any auth work: no session lookup, no
   // cookie refresh, nothing that could turn a QR scan into a redirect.
@@ -47,7 +47,7 @@ export default async function proxy(request: NextRequest) {
       nextUrl.pathname.startsWith(PORTAL_PREFIX) ||
       nextUrl.pathname.startsWith(ADMIN_PREFIX)
     ) {
-      const target = new URL(nextUrl.pathname + nextUrl.search, env.NEXT_PUBLIC_PORTAL_URL);
+      const target = new URL(nextUrl.pathname + nextUrl.search, env.PORTAL_URL);
       return NextResponse.redirect(target);
     }
     return NextResponse.next();

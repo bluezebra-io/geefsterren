@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
 
-import { clientEnv, serverEnv } from '@/lib/env';
+import { appConfig, serverEnv } from '@/lib/env';
 import type { Database } from '@/types/database.generated';
 
 /**
@@ -20,10 +20,10 @@ import type { Database } from '@/types/database.generated';
  * ESLint rule additionally blocks the path from `src/components/**`.
  */
 export function createSupabaseAdminClient() {
-  const { NEXT_PUBLIC_SUPABASE_URL } = clientEnv();
+  const { SUPABASE_URL } = appConfig();
   const { SUPABASE_SERVICE_ROLE_KEY } = serverEnv();
 
-  return createClient<Database>(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       // A service client has no user session; persisting or refreshing one would be meaningless
       // and, in a shared server process, actively dangerous.

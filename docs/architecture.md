@@ -78,7 +78,6 @@ This is enforced by the shape of `ResolveExternalReviewInvitationInput`, not by 
 
 | Client | File | Key | Used from |
 | --- | --- | --- | --- |
-| Browser | `lib/supabase/browser.ts` | anon | Client Components |
 | Server | `lib/supabase/server.ts` | anon + user session | RSC, Server Actions, route handlers |
 | Admin | `lib/supabase/admin.ts` | **service role** | server-only modules; bypasses RLS |
 | Middleware | `lib/supabase/middleware.ts` | anon + session refresh | `src/proxy.ts` |

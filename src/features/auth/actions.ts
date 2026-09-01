@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { logger, describeError } from '@/lib/observability/logger';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
@@ -37,7 +37,7 @@ export async function sendMagicLinkAction(
 
   const { email, next } = parsed.data;
   const supabase = await createSupabaseServerClient();
-  const portalUrl = clientEnv().NEXT_PUBLIC_PORTAL_URL;
+  const portalUrl = appConfig().PORTAL_URL;
   const callback = new URL('/auth/callback', portalUrl);
   callback.searchParams.set('next', safeNextPath(next));
 

@@ -662,7 +662,7 @@ default to `nl` for Dutch locations regardless of the portal's locale.
 **22. macOS binds port 5000.** AirPlay Receiver (ControlCenter) holds it and answers `403`, which
 looks exactly like an application error. Local development therefore runs on **5010**, which is
 free. Anyone changing the port must update the three `NEXT_PUBLIC_*_URL` values with it: the proxy
-decides marketing vs portal by comparing the request host against `NEXT_PUBLIC_PORTAL_URL`, so a
+decides marketing vs portal by comparing the request host against `PORTAL_URL`, so a
 mismatched port silently sends every portal request to the marketing site.
 
 **23. Default branch is `production`.** Committing feature work straight onto `production` in a repo

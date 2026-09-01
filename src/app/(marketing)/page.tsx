@@ -14,7 +14,7 @@ import {
 import { FaqList } from '@/components/website/faq-list';
 import { FeedbackCodeInput } from '@/components/website/feedback-code-input';
 import { HeroPhoneMock } from '@/components/website/hero-phone-mock';
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { getMessages } from '@/lib/i18n/locale';
 
 export const metadata = {
@@ -36,7 +36,7 @@ export const metadata = {
  */
 export default async function MarketingHomePage() {
   const t = await getMessages();
-  const portalUrl = clientEnv().NEXT_PUBLIC_PORTAL_URL;
+  const portalUrl = appConfig().PORTAL_URL;
 
   const steps = [
     { title: t.marketing.step1Title, text: t.marketing.step1Body },

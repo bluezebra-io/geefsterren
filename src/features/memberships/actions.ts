@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { writeAuditLog } from '@/features/audit/service';
 import { requireMemberManage } from '@/features/auth/guards';
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { ConflictError, isExpectedError, isTransientDatabaseError, NotFoundError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -51,7 +51,7 @@ export async function inviteMemberAction(
     await requireMemberManage(input.organizationId);
 
     const admin = createSupabaseAdminClient();
-    const portalUrl = clientEnv().NEXT_PUBLIC_PORTAL_URL;
+    const portalUrl = appConfig().PORTAL_URL;
 
     const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
       input.email,

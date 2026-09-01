@@ -61,8 +61,8 @@ fails the boot with a specific message rather than surfacing later as a confusin
 
 > **Why 5010 and not 5000.** On macOS, AirPlay Receiver (ControlCenter) binds port 5000 and answers
 > every request with `403`, which looks exactly like an application error. Port 5010 avoids it.
-> If you change the port, update the three `NEXT_PUBLIC_*_URL` values to match — the proxy decides
-> marketing vs portal by comparing the request host to `NEXT_PUBLIC_PORTAL_URL`.
+> If you change the port, update the three `*_URL` values to match — the proxy decides
+> marketing vs portal by comparing the request host to `PORTAL_URL`.
 
 ## Design system
 

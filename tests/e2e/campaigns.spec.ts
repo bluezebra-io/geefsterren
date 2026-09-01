@@ -18,8 +18,8 @@ test.describe.configure({ mode: 'serial' });
 async function sessionCookies(email: string) {
   const jar = new Map<string, string>();
   const sb = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll: () => [...jar].map(([name, value]) => ({ name, value })),
@@ -46,7 +46,7 @@ let emptyLocationId: string | null = null;
 
 function admin() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } },
   );

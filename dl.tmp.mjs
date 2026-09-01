@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs';
 config({ path: '.env.local', quiet: true });
 
 const jar = new Map();
-const sb = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+const sb = createServerClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
   cookies: { getAll: () => [...jar].map(([n,v]) => ({ name:n, value:v })), setAll: (l) => l.forEach(({name,value}) => jar.set(name,value)) },
 });
 await sb.auth.signInWithPassword({ email: 'org.admin@bakkerij.test', password: 'LocalDev!2026' });
@@ -12,7 +12,7 @@ const cookie = [...jar].map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('; 
 
 // The seeded QR has no ciphertext, so it must be reissued before it can be
 // downloaded. Do that the way the portal does: via the action's underlying update.
-const svc = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+const svc = createServerClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
   cookies: { getAll: () => [], setAll: () => {} },
 });
 const { data: qr } = await svc.from('qr_codes').select('id, token_encrypted').eq('label','Bezorgdoos Leiden').single();

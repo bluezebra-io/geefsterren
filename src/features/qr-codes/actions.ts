@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { writeAuditLog } from '@/features/audit/service';
 import { requireActor } from '@/features/auth/guards';
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { isExpectedError, isTransientDatabaseError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { decryptValue, encryptValue } from '@/lib/security/encryption';
@@ -128,7 +128,7 @@ export async function createQrCodeAction(
       qrCodeId: data.id,
       token,
       feedbackCode,
-      url: feedbackUrlFor(clientEnv().NEXT_PUBLIC_REVIEW_URL, token),
+      url: feedbackUrlFor(appConfig().REVIEW_URL, token),
     });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
@@ -200,7 +200,7 @@ export async function rotateQrCodeAction(
       qrCodeId: data.id,
       token,
       feedbackCode,
-      url: feedbackUrlFor(clientEnv().NEXT_PUBLIC_REVIEW_URL, token),
+      url: feedbackUrlFor(appConfig().REVIEW_URL, token),
     });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
@@ -238,7 +238,7 @@ export async function resolveFeedbackCodeAction(
   const token = await lookupTokenForCode(code);
   if (!token) return 'invalid';
 
-  redirect(feedbackUrlFor(clientEnv().NEXT_PUBLIC_REVIEW_URL, token));
+  redirect(feedbackUrlFor(appConfig().REVIEW_URL, token));
 }
 
 /**

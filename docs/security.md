@@ -66,7 +66,7 @@ it reads, ending the cycle.
 
 | Key | Exposure | Location |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public, RLS-constrained | browser + server |
+| `SUPABASE_ANON_KEY` | not secret, RLS-constrained | server only |
 | `SUPABASE_SERVICE_ROLE_KEY` | **secret, bypasses RLS** | `lib/supabase/admin.ts` only |
 | `APP_ENCRYPTION_KEY` | secret | `lib/security/encryption.ts` only |
 | `CRON_SECRET` | secret | `/api/internal/*` verification |
@@ -76,9 +76,16 @@ Containment for the service-role key:
 1. `lib/supabase/admin.ts` begins with `import 'server-only'` — importing it from a Client
    Component is a build error.
 2. An ESLint `no-restricted-imports` rule blocks the path from `src/components/**`.
-3. `lib/env.ts` splits server and client schemas; the client schema only knows `NEXT_PUBLIC_*`.
-4. Environment validation rejects any `NEXT_PUBLIC_*` value that looks like a service-role JWT
-   (`"role":"service_role"` in the payload).
+3. `lib/env.ts` keeps three schemas apart; only the client schema knows `NEXT_PUBLIC_*`, and it
+   holds no secrets. The host URLs sit in their own schema so the proxy and the public feedback
+   flow never have to read a secret to route a request.
+4. Environment validation rejects a service-role JWT (`"role":"service_role"` in the payload) in
+   the anon-key slot. Substituting one there would turn every user-scoped query into an
+   RLS-bypassing one — quieter, and worse, than exposure.
+5. No browser-side Supabase client exists. All access runs through Server Components and server
+   actions, so the anon key never leaves the server and needs no `NEXT_PUBLIC_` prefix. Adding a
+   browser client would make RLS the only remaining check and is a deliberate decision, not a
+   convenience.
 
 ## Public feedback flow
 

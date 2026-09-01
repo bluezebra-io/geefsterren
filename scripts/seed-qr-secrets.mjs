@@ -28,13 +28,13 @@ const SEEDED = [
   { label: 'Tafelkaart Groningen', token: 'DemoGroningen001', code: 'GRN4GH56' },
 ];
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const url = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const encryptionKey = process.env.APP_ENCRYPTION_KEY;
 
 if (!url || !serviceKey || !encryptionKey) {
   console.error(
-    'Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or APP_ENCRYPTION_KEY in .env.local',
+    'Missing SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or APP_ENCRYPTION_KEY in .env.local',
   );
   process.exit(1);
 }

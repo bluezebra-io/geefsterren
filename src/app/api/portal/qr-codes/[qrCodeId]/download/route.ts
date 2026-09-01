@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 
 import { getPortalActor } from '@/features/auth/queries';
 import { feedbackUrlFor } from '@/features/qr-codes/service';
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { describeError, logger } from '@/lib/observability/logger';
 import { decryptValue } from '@/lib/security/encryption';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -75,7 +75,7 @@ export async function GET(
     );
   }
 
-  const url = feedbackUrlFor(clientEnv().NEXT_PUBLIC_REVIEW_URL, token);
+  const url = feedbackUrlFor(appConfig().REVIEW_URL, token);
 
   // Filename carries organization, location and campaign, so a folder of these
   // is still sortable months later.

@@ -3,7 +3,7 @@ import 'server-only';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import type { Database } from '@/types/database.generated';
 
 import { fetchWithClockSkewRetry } from './retry-fetch';
@@ -16,11 +16,11 @@ import { fetchWithClockSkewRetry } from './retry-fetch';
  */
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
-  const env = clientEnv();
+  const env = appConfig();
 
   return createServerClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    env.SUPABASE_URL,
+    env.SUPABASE_ANON_KEY,
     {
       global: { fetch: fetchWithClockSkewRetry },
       cookies: {

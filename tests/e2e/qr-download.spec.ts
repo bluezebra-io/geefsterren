@@ -14,8 +14,8 @@ const LEIDEN = '33333333-3333-4333-8333-000000000001';
 async function sessionCookies(email: string) {
   const jar = new Map<string, string>();
   const sb = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll: () => [...jar].map(([name, value]) => ({ name, value })),
@@ -71,7 +71,7 @@ test('a QR code from another organization is not downloadable', async ({ browser
   // Read the other organization's QR id with the service role, then try it as the
   // bakery administrator: RLS must make it indistinguishable from a missing row.
   const sushi = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { cookies: { getAll: () => [], setAll: () => {} } },
   );

@@ -3,16 +3,26 @@ import { z } from 'zod';
 /**
  * Environment validation.
  *
- * Split into a client schema (NEXT_PUBLIC_* only) and a server schema. The split is a security
- * boundary, not a stylistic one: anything in the client schema ends up in the browser bundle.
+ * Three groups, and the boundaries between them are functional rather than stylistic:
+ *
+ * - `clientSchema` (NEXT_PUBLIC_* only) is a security boundary. Anything in it is inlined into the
+ *   browser bundle at build time. Nothing but the Sentry DSN belongs here: all data access runs
+ *   through Server Components and server actions, so the browser talks to no backend directly.
+ * - `configSchema` holds server-side configuration that is not secret — the Supabase endpoint and
+ *   the three host URLs.
+ * - `serverSchema` holds the secrets and the knobs that go with them.
+ *
+ * Config is kept out of `serverSchema` on purpose: `src/proxy.ts` needs the portal URL and the
+ * Supabase endpoint on every single request, the public feedback flow included, and must not be
+ * taken down by a missing AI key or cron secret it never uses.
  */
 
 const nonEmpty = z.string().trim().min(1);
 
 /**
- * A service-role key is a JWT whose payload contains `"role":"service_role"`. If one is ever
- * pasted into a NEXT_PUBLIC_* variable it would be published to every visitor, so we detect it
- * and refuse to boot rather than ship it.
+ * A service-role key is a JWT whose payload contains `"role":"service_role"`. Pasting one into the
+ * anon-key slot would silently turn every user-scoped query into an RLS-bypassing one, which is a
+ * quieter and worse failure than exposure. Detected here so the app refuses to boot instead.
  */
 function looksLikeServiceRoleKey(value: string): boolean {
   const segments = value.split('.');
@@ -25,17 +35,24 @@ function looksLikeServiceRoleKey(value: string): boolean {
   }
 }
 
-const publicKey = nonEmpty.refine((value) => !looksLikeServiceRoleKey(value), {
-  message: 'This value is a service-role key and must never be exposed as NEXT_PUBLIC_*',
+const anonKey = nonEmpty.refine((value) => !looksLikeServiceRoleKey(value), {
+  message: 'This value is a service-role key; it bypasses RLS and must never be used as the anon key',
 });
 
 const clientSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: publicKey,
-  NEXT_PUBLIC_MARKETING_URL: z.url(),
-  NEXT_PUBLIC_PORTAL_URL: z.url(),
-  NEXT_PUBLIC_REVIEW_URL: z.url(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().trim().optional(),
+});
+
+/**
+ * Read per request rather than frozen at build time, so one build can be promoted between
+ * environments and a deployment can be repointed without a rebuild.
+ */
+const configSchema = z.object({
+  SUPABASE_URL: z.url(),
+  SUPABASE_ANON_KEY: anonKey,
+  MARKETING_URL: z.url(),
+  PORTAL_URL: z.url(),
+  REVIEW_URL: z.url(),
 });
 
 const serverSchema = z.object({
@@ -73,6 +90,7 @@ const serverSchema = z.object({
 });
 
 type ClientEnv = z.infer<typeof clientSchema>;
+type AppConfig = z.infer<typeof configSchema>;
 type ServerEnv = z.infer<typeof serverSchema>;
 
 function format(error: z.ZodError): string {
@@ -86,11 +104,6 @@ function format(error: z.ZodError): string {
  */
 function readClientEnv(): ClientEnv {
   const parsed = clientSchema.safeParse({
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_MARKETING_URL: process.env.NEXT_PUBLIC_MARKETING_URL,
-    NEXT_PUBLIC_PORTAL_URL: process.env.NEXT_PUBLIC_PORTAL_URL,
-    NEXT_PUBLIC_REVIEW_URL: process.env.NEXT_PUBLIC_REVIEW_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   });
 
@@ -99,12 +112,35 @@ function readClientEnv(): ClientEnv {
 }
 
 let clientEnvCache: ClientEnv | undefined;
+let appConfigCache: AppConfig | undefined;
 let serverEnvCache: ServerEnv | undefined;
 
-/** Safe to call from anywhere, including Client Components. */
+/**
+ * Safe to call from anywhere, including Client Components. Currently carries only the Sentry DSN;
+ * it stays as the single declared client contract so future browser-facing values go through
+ * validation instead of reaching for `process.env` ad hoc.
+ */
 export function clientEnv(): ClientEnv {
   clientEnvCache ??= readClientEnv();
   return clientEnvCache;
+}
+
+/**
+ * Server only. Validates the non-secret configuration and nothing else, so a missing secret
+ * elsewhere cannot take down the marketing site or the QR feedback flow.
+ */
+export function appConfig(): AppConfig {
+  if (typeof window !== 'undefined') {
+    throw new Error('appConfig() must never be called from the browser');
+  }
+
+  if (!appConfigCache) {
+    const parsed = configSchema.safeParse(process.env);
+    if (!parsed.success) throw new Error(format(parsed.error));
+    appConfigCache = parsed.data;
+  }
+
+  return appConfigCache;
 }
 
 /** Server only. Throws if called in the browser. */
@@ -135,4 +171,4 @@ export function serverEnv(): ServerEnv {
   return serverEnvCache;
 }
 
-export type { ClientEnv, ServerEnv };
+export type { AppConfig, ClientEnv, ServerEnv };

@@ -14,7 +14,7 @@ const LEIDEN_LOCATION = '33333333-3333-4333-8333-000000000001';
  */
 function service() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } },
   );

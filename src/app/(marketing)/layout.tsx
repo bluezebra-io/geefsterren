@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
-import { clientEnv } from '@/lib/env';
+import { appConfig } from '@/lib/env';
 import { getMessages, resolveLocale } from '@/lib/i18n/locale';
 import { PublicI18nProvider } from '@/lib/i18n/provider';
 import { pickPublicMessages } from '@/lib/i18n/scope';
@@ -18,7 +18,7 @@ import { pickPublicMessages } from '@/lib/i18n/scope';
  */
 export default async function MarketingLayout({ children }: { children: ReactNode }) {
   const [t, locale] = await Promise.all([getMessages(), resolveLocale()]);
-  const portalUrl = clientEnv().NEXT_PUBLIC_PORTAL_URL;
+  const portalUrl = appConfig().PORTAL_URL;
 
   const sections = [
     { href: '/hoe-het-werkt', label: t.marketing.navHowItWorks },
