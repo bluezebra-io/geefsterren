@@ -6,10 +6,11 @@ import { writeAuditLog } from '@/features/audit/service';
 import { requireOrganizationManage } from '@/features/auth/guards';
 import { canManageOrganization } from '@/features/auth/service';
 import { requireActor } from '@/features/auth/guards';
-import { ConflictError, isExpectedError } from '@/lib/errors';
+import { ConflictError, isExpectedError, isTransientDatabaseError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
+import { actionErrors } from '@/lib/i18n/errors';
 import { actionError, actionOk, type ActionResult } from '@/types/domain';
 
 import { getLocation, slugExists } from './queries';
@@ -86,6 +87,10 @@ export async function createLocationAction(
     return actionOk({ locationId: data.id });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('location create failed', {
       organization_id: input.organizationId,
       ...describeError(error),
@@ -172,6 +177,10 @@ export async function updateLocationAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('location update failed', {
       location_id: input.locationId,
       ...describeError(error),

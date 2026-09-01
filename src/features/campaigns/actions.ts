@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { writeAuditLog } from '@/features/audit/service';
 import { requireActor } from '@/features/auth/guards';
-import { ConflictError, isExpectedError, NotFoundError } from '@/lib/errors';
+import { ConflictError, isExpectedError, isTransientDatabaseError, NotFoundError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
@@ -107,6 +107,10 @@ export async function createCampaignAction(
     return actionOk({ campaignId: data.id });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('campaign creation failed', {
       location_id: input.locationId,
       ...describeError(error),
@@ -174,6 +178,10 @@ export async function setCampaignStatusAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('campaign status change failed', { ...describeError(error) });
     return actionError((await actionErrors()).campaignStatus);
   }

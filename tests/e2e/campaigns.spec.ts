@@ -35,6 +35,15 @@ async function sessionCookies(email: string) {
 /** Shared between the serial tests below: the QR link created in one, used in the next. */
 let guestUrl: string | null = null;
 
+/**
+ * A location this spec owns outright, used for the empty-state test.
+ *
+ * That test asserts a location has *no* campaign yet. Pointing it at a seeded location made it fail
+ * the moment anyone used the local app for real — including creating a campaign for Napoli by hand
+ * — which is a test reporting on the developer's habits rather than on the product.
+ */
+let emptyLocationId: string | null = null;
+
 function admin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,8 +52,27 @@ function admin() {
   );
 }
 
+test.beforeAll(async () => {
+  const { data, error } = await admin()
+    .from('locations')
+    .insert({
+      organization_id: '22222222-2222-4222-8222-000000000002',
+      name: 'E2E lege vestiging',
+      slug: `e2e-empty-${Date.now()}`,
+      timezone: 'Europe/Amsterdam',
+    })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(`Could not create the empty test location: ${error.message}`);
+  emptyLocationId = data.id;
+});
+
 test.afterAll(async () => {
   const service = admin();
+
+  if (emptyLocationId) await service.from('locations').delete().eq('id', emptyLocationId);
+
   const { data: campaigns } = await service
     .from('campaigns')
     .select('id')
@@ -63,11 +91,11 @@ test('a location without a campaign is not a dead end', async ({ browser }) => {
   const page = await context.newPage();
 
   // The QR page cannot do anything yet, and says where to go.
-  await page.goto(`${PORTAL}/app/locations/${NAPOLI}/qr-codes`);
+  await page.goto(`${PORTAL}/app/locations/${emptyLocationId}/qr-codes`);
   await expect(page.getByText(/Maak eerst een campagne/)).toBeVisible();
 
   await page.getByRole('link', { name: /Nieuwe campagne/ }).click();
-  await expect(page).toHaveURL(new RegExp(`/app/locations/${NAPOLI}/campaigns$`));
+  await expect(page).toHaveURL(new RegExp(`/app/locations/${emptyLocationId}/campaigns$`));
   await expect(page.getByText('Nog geen campagnes')).toBeVisible();
 
   await context.close();

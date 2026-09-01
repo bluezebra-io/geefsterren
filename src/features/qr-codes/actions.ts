@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { writeAuditLog } from '@/features/audit/service';
 import { requireActor } from '@/features/auth/guards';
 import { clientEnv } from '@/lib/env';
-import { isExpectedError } from '@/lib/errors';
+import { isExpectedError, isTransientDatabaseError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { decryptValue, encryptValue } from '@/lib/security/encryption';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -132,6 +132,10 @@ export async function createQrCodeAction(
     });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('qr code creation failed', {
       location_id: input.locationId,
       ...describeError(error),
@@ -200,6 +204,10 @@ export async function rotateQrCodeAction(
     });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('qr code rotation failed', { ...describeError(error) });
     return actionError((await actionErrors()).qrRotate);
   }

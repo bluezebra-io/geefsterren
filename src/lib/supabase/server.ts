@@ -6,6 +6,8 @@ import { cookies } from 'next/headers';
 import { clientEnv } from '@/lib/env';
 import type { Database } from '@/types/database.generated';
 
+import { fetchWithClockSkewRetry } from './retry-fetch';
+
 /**
  * Supabase client for Server Components, Server Actions and route handlers.
  *
@@ -20,6 +22,7 @@ export async function createSupabaseServerClient() {
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      global: { fetch: fetchWithClockSkewRetry },
       cookies: {
         getAll() {
           return cookieStore.getAll();

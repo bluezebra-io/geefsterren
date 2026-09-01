@@ -61,3 +61,31 @@ export function isExpectedError(
     error instanceof ConflictError
   );
 }
+
+/**
+ * Codes that mean "the infrastructure hiccuped", not "your request was wrong".
+ *
+ * `PGRST303` is *JWT issued at future*: PostgREST rejects a token whose `iat` is
+ * ahead of its own clock. It happens with sub-second drift between containers —
+ * on Docker Desktop the very first request after signing in can trip it — and it
+ * succeeds on the next attempt with the same input.
+ *
+ * Worth separating because the alternative is what actually happened here: a
+ * clock problem surfaced as "Could not create this campaign", which sent everyone
+ * looking for a bug in the campaign code.
+ */
+const TRANSIENT_DATABASE_CODES = new Set([
+  'PGRST303', // JWT issued at future — clock skew
+  '08000', // connection exception
+  '08003', // connection does not exist
+  '08006', // connection failure
+  '57P03', // cannot connect now, server starting up
+  '40001', // serialization failure
+  '40P01', // deadlock detected
+]);
+
+export function isTransientDatabaseError(error: unknown): boolean {
+  if (error === null || typeof error !== 'object') return false;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === 'string' && TRANSIENT_DATABASE_CODES.has(code);
+}

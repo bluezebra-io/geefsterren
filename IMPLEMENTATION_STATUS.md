@@ -668,3 +668,34 @@ mismatched port silently sends every portal request to the marketing site.
 **23. Default branch is `production`.** Committing feature work straight onto `production` in a repo
 wired to Vercel would deploy it. `main` should be created and set as the default before any
 deployment integration is connected.
+
+**24. Authorization was decided in two places that disagreed.** `canManageOrganization()` in
+TypeScript counted platform administrators; `app.can_manage_location()` in SQL checked memberships
+only. A platform administrator therefore saw the campaign and QR forms and got
+`42501 new row violates row-level security policy` on submit — a form that looks usable and is not.
+Migration `20260819000014_platform_admin_can_manage.sql` adds `app.is_platform_admin()` to the
+predicate, deliberately *not* widening it to all platform staff so read-only support stays
+read-only. Pinned by `tests/integration/platform-write-access.test.ts`.
+
+The general lesson matters more than the fix: whenever the UI decides whether to render a control,
+that decision has to be the same rule RLS enforces. Where a check cannot reuse
+`app.can_manage_location()` directly, it should call it — as `updateLocationAction` does — rather
+than restate it.
+
+**25. Clock drift between containers rejects freshly minted tokens.** PostgREST compares a token's
+`iat` against its own clock, and GoTrue stamps `iat` as a whole second, truncating the fraction
+away. A validating clock running slightly behind therefore reads a moment *earlier* than the stamp
+and refuses the token with `PGRST303 JWT issued at future`. It strikes the first request after
+signing in and clears itself moments later, so it presented as "the portal randomly fails": a hard
+500 on `/admin`, and a generic failure message on a form that was otherwise correct.
+
+`lib/supabase/retry-fetch.ts` retries that specific code twice, which is safe only because the
+request is refused at the JWT gate before any statement runs — a retried write cannot apply twice.
+It logs each retry, because persistent drift is an infrastructure fault worth seeing rather than
+absorbing. On Docker Desktop the durable fix is restarting the containers; wherever auth and
+PostgREST run on separate hosts, it is NTP.
+
+**26. Infrastructure failures used to wear domain error messages.** The clock problem above surfaced
+as "Could not create this campaign", which sent everyone looking for a bug in the campaign code.
+`isTransientDatabaseError()` in `lib/errors.ts` separates the codes that mean *retry* from the ones
+that mean *your request was wrong*, so a temporary fault says so and a `42501` never does.

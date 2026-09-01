@@ -43,6 +43,21 @@ Hardening — all of these are required, not optional:
 - The `app` schema is not exposed through PostgREST.
 - RLS integration tests assert `anon` cannot execute them.
 
+### Who `can_manage_location` admits
+
+| Caller | May manage | Why |
+| --- | --- | --- |
+| Platform administrator | yes | Runs the platform; acts on a participant's behalf during support |
+| Platform support | **no** | Deliberately read-only; the whole point of the separate role |
+| Organization administrator | yes, within their organization | |
+| Location manager | yes, for their assigned locations | |
+| Viewer | no | |
+
+The platform-administrator branch was missing at first, which made the SQL rule disagree with the
+TypeScript check the portal uses to decide whether to render a form: the form appeared and the
+insert was refused with `42501`. Two rules describing one permission will drift, so a check that
+cannot reuse this function should *call* it — `updateLocationAction` does — instead of restating it.
+
 `SECURITY DEFINER` is also what breaks policy recursion: a policy on `organization_memberships`
 that queried `organization_memberships` directly would loop. The helper bypasses RLS on the tables
 it reads, ending the cycle.

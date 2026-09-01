@@ -182,6 +182,7 @@ export const en = {
     removeMembership: 'Could not remove this membership',
     locationAccess: 'Could not update location access',
     saveProfile: 'Could not save your profile',
+    temporary: 'Something went wrong on our side. Try again in a moment.',
     checkForm: 'Check the form and try again',
     campaignCreate: 'Could not create this campaign',
     campaignStatus: 'Could not change this campaign',

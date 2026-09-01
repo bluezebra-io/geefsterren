@@ -185,6 +185,7 @@ export const nl: Messages = {
     removeMembership: 'Dit lidmaatschap kon niet worden verwijderd',
     locationAccess: 'De toegang tot vestigingen kon niet worden bijgewerkt',
     saveProfile: 'Je profiel kon niet worden opgeslagen',
+    temporary: 'Er ging iets mis aan onze kant. Probeer het over een moment opnieuw.',
     checkForm: 'Controleer het formulier en probeer het opnieuw',
     campaignCreate: 'De campagne kon niet worden aangemaakt',
     campaignStatus: 'De campagne kon niet worden gewijzigd',

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { writeAuditLog } from '@/features/audit/service';
 import { requireOrganizationManage } from '@/features/auth/guards';
-import { ConflictError, isExpectedError, NotFoundError } from '@/lib/errors';
+import { ConflictError, isExpectedError, isTransientDatabaseError, NotFoundError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
@@ -89,6 +89,10 @@ export async function createQuestionnaireAction(
     return actionOk({ versionId: version.id });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('questionnaire creation failed', {
       organization_id: input.organizationId,
       ...describeError(error),
@@ -214,6 +218,10 @@ export async function addQuestionAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('add question failed', { ...describeError(error) });
     return actionError((await actionErrors()).questionAdd);
   }
@@ -258,6 +266,10 @@ export async function removeQuestionAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('remove question failed', { ...describeError(error) });
     return actionError((await actionErrors()).questionRemove);
   }
@@ -312,6 +324,10 @@ export async function publishVersionAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('publish version failed', { ...describeError(error) });
     return actionError((await actionErrors()).questionnairePublish);
   }
@@ -439,6 +455,10 @@ export async function newDraftFromTemplateAction(
     return actionOk({ versionId: draft.id });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('new draft failed', { ...describeError(error) });
     return actionError((await actionErrors()).questionnaireDraft);
   }
@@ -568,6 +588,10 @@ export async function assignVersionAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('assign version failed', { ...describeError(error) });
     return actionError((await actionErrors()).questionnaireAssign);
   }

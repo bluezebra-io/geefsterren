@@ -5,11 +5,12 @@ import { revalidatePath } from 'next/cache';
 import { writeAuditLog } from '@/features/audit/service';
 import { requireMemberManage } from '@/features/auth/guards';
 import { clientEnv } from '@/lib/env';
-import { ConflictError, isExpectedError, NotFoundError } from '@/lib/errors';
+import { ConflictError, isExpectedError, isTransientDatabaseError, NotFoundError } from '@/lib/errors';
 import { describeError, logger } from '@/lib/observability/logger';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { toFieldErrors } from '@/lib/validation/field-errors';
+import { actionErrors } from '@/lib/i18n/errors';
 import { actionError, actionOk, type ActionResult } from '@/types/domain';
 
 import { listLocationAssignments } from './queries';
@@ -114,6 +115,10 @@ export async function inviteMemberAction(
     return actionOk({ userId });
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('invite member failed', {
       organization_id: input.organizationId,
       ...describeError(error),
@@ -191,6 +196,10 @@ export async function updateMembershipAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('membership update failed', { ...describeError(error) });
     return actionError('Could not update this membership');
   }
@@ -249,6 +258,10 @@ export async function removeMembershipAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('membership removal failed', { ...describeError(error) });
     return actionError('Could not remove this membership');
   }
@@ -291,6 +304,10 @@ export async function setLocationAssignmentsAction(
     return actionOk();
   } catch (error) {
     if (isExpectedError(error)) return actionError(error.message);
+    if (isTransientDatabaseError(error)) {
+      logger.warn('transient database error', { ...describeError(error) });
+      return actionError((await actionErrors()).temporary);
+    }
     logger.error('location assignment failed', {
       organization_id: input.organizationId,
       ...describeError(error),

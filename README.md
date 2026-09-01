@@ -213,6 +213,30 @@ Give GoTrue a few seconds.
 RLS tests run against real PostgreSQL through the anon key with real sessions. Policies cannot be
 mocked — a mocked policy proves nothing. Details in [docs/testing.md](docs/testing.md).
 
+## Troubleshooting
+
+**A page returns 500, or a form fails once and then works.** Check the dev server log for
+`PGRST303` / `JWT issued at future`. The container that validates tokens is running behind the one
+that mints them, so a token created a fraction of a second ago looks like it comes from the future.
+The application retries this automatically, and logs each retry; if you see it repeatedly, resync
+the clocks:
+
+```bash
+docker restart supabase_rest_geefsterren supabase_auth_geefsterren
+```
+
+Restarting Docker Desktop itself fixes the drift more durably — its VM clock is what slips, usually
+after the host has been asleep.
+
+**A form is visible but submitting it is refused.** Look for `42501` in the log: RLS declined the
+write. That means the permission rule in the database and the check the portal used to render the
+control disagree — see §7 risk 24 in
+[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Fix the rule, not the UI.
+
+**End-to-end tests fail on data that exists.** The suites run against the seeded database. They
+clean up after themselves, but rows created by hand in the portal stay. `npm run db:reset` restores
+the seed — it discards local changes, including any accounts or grants you set up by hand.
+
 ## Deployment
 
 One Vercel deployment serves all hostnames; `src/proxy.ts` routes by host. Region `fra1`,
