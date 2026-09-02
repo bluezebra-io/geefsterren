@@ -72,6 +72,14 @@ export function FeedbackCodeInput() {
           placeholder={t.marketing.codePlaceholder}
           autoComplete="off"
           autoCapitalize="characters"
+          /*
+           * An input's default `size=20` is an intrinsic width — here 273px at
+           * this type size and letter-spacing — and it is a floor that neither
+           * `min-w-0` nor `flex-1` removes. It made the hero grid 466px wide on
+           * a 390px screen, so the page scrolled sideways. `size={1}` drops the
+           * floor; `flex-1` still stretches the field to fill the row.
+           */
+          size={1}
           spellCheck={false}
           maxLength={FEEDBACK_CODE_LENGTH + 4}
           aria-invalid={invalid || undefined}

@@ -20,7 +20,10 @@ const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2 whitespace-nowrap',
     'font-sans font-semibold leading-none',
-    'border border-transparent',
+    // Width only. Colour belongs to the variant: setting a transparent colour
+    // here too would collide with the variant's, and CSS source order rather
+    // than intent would decide which wins.
+    'border',
     'transition-[background-color,border-color,color,box-shadow] duration-140 ease-[cubic-bezier(.2,.8,.2,1)]',
     'disabled:cursor-not-allowed disabled:opacity-50',
   ].join(' '),
@@ -28,15 +31,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-[var(--color-brand-primary)] text-[var(--color-brand-primary-ink)] shadow-[var(--shadow-xs)] hover:not-disabled:bg-[var(--color-brand-primary-hover)] active:not-disabled:bg-[var(--color-brand-primary-active)] active:not-disabled:shadow-none',
+          'border-transparent bg-[var(--color-brand-primary)] text-[var(--color-brand-primary-ink)] shadow-[var(--shadow-xs)] hover:not-disabled:bg-[var(--color-brand-primary-hover)] active:not-disabled:bg-[var(--color-brand-primary-active)] active:not-disabled:shadow-none',
         secondary:
-          'bg-[var(--color-brand-secondary)] text-[var(--color-text-inverse)] shadow-[var(--shadow-xs)] hover:not-disabled:bg-[var(--color-brand-secondary-hover)] active:not-disabled:bg-ink-700 active:not-disabled:shadow-none',
+          'border-transparent bg-[var(--color-brand-secondary)] text-[var(--color-text-inverse)] shadow-[var(--shadow-xs)] hover:not-disabled:bg-[var(--color-brand-secondary-hover)] active:not-disabled:bg-ink-700 active:not-disabled:shadow-none',
         outline:
           'bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border-strong)] hover:not-disabled:bg-[var(--color-surface-muted)] hover:not-disabled:border-ink-300 active:not-disabled:bg-cream-300',
         ghost:
-          'bg-transparent text-[var(--color-text-primary)] hover:not-disabled:bg-[var(--color-surface-muted)] active:not-disabled:bg-cream-300',
+          'border-transparent bg-transparent text-[var(--color-text-primary)] hover:not-disabled:bg-[var(--color-surface-muted)] active:not-disabled:bg-cream-300',
         danger:
-          'bg-[var(--color-error)] text-white hover:not-disabled:bg-coral-700',
+          'border-transparent bg-[var(--color-error)] text-white hover:not-disabled:bg-coral-700',
         // For the ink sidebar and other inverted surfaces.
         onDark:
           'bg-transparent text-[var(--color-text-inverse)] border-[var(--color-border-inverse)] hover:not-disabled:bg-[rgba(253,251,247,.1)]',

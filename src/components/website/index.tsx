@@ -10,6 +10,45 @@ import { cn } from '@/lib/utils';
  * requirements rather than styling choices. Each one is noted at its component.
  */
 
+/* ------------------------------------------------------------- Section --- */
+
+/**
+ * One content band — design system section rhythm.
+ *
+ * `.gs-section` is 4rem of vertical padding, `--tight` is 3rem, and the wrap
+ * centres content at 72rem with 1.5rem of side padding. Long-form bands (FAQ,
+ * page intros) narrow to 56rem.
+ *
+ * The `tone` values are the only three backgrounds a page may use, and the
+ * brand rule is a maximum of two per screen plus one amber accent. Encoding
+ * them here rather than as loose classes is what keeps that countable.
+ */
+export function Section({
+  tone = 'cream',
+  tight = false,
+  narrow = false,
+  className,
+  children,
+}: {
+  tone?: 'cream' | 'surface' | 'ink';
+  tight?: boolean;
+  narrow?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const tones = {
+    cream: 'bg-[var(--color-background)]',
+    surface: 'bg-[var(--color-surface)]',
+    ink: 'bg-ink-900 text-[var(--color-text-inverse)]',
+  } as const;
+
+  return (
+    <section className={cn(tight ? 'py-12' : 'py-16', tones[tone], className)}>
+      <div className={cn('mx-auto px-6', narrow ? 'max-w-4xl' : 'max-w-6xl')}>{children}</div>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------- Eyebrow --- */
 
 export function Eyebrow({ children }: { children: ReactNode }) {
@@ -38,7 +77,7 @@ export function ExampleLabel({ children }: { children?: ReactNode }) {
 
 /* ------------------------------------------------------------ StepFlow --- */
 
-export type FlowStep = { title: string; text?: string };
+export type FlowStep = { title: string; text?: string; icon?: ReactNode };
 
 /**
  * The Feedback → Insight → Improvement → Result progression.
@@ -47,23 +86,44 @@ export type FlowStep = { title: string; text?: string };
  * means "this is the action or the outcome" and using it four times would say
  * nothing. One sentence per step — if a step needs two, it is two steps.
  */
-export function StepFlow({ steps, brandLast = false }: { steps: FlowStep[]; brandLast?: boolean }) {
+export function StepFlow({
+  steps,
+  brandLast = false,
+  columns = 4,
+}: {
+  steps: FlowStep[];
+  brandLast?: boolean;
+  columns?: 3 | 4;
+}) {
   return (
-    <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <ol
+      className={cn(
+        'grid gap-6 sm:grid-cols-2',
+        columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4',
+      )}
+    >
       {steps.map((step, index) => {
         const isPayoff = brandLast && index === steps.length - 1;
         return (
           <li key={step.title}>
-            <span
-              className={cn(
-                'tabular grid size-9 place-items-center rounded-full text-sm font-bold',
-                isPayoff
-                  ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-primary-ink)]'
-                  : 'bg-ink-900 text-[var(--color-text-inverse)]',
-              )}
-            >
-              {index + 1}
-            </span>
+            <div className="flex items-center gap-3">
+              <span
+                className={cn(
+                  'tabular grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold',
+                  isPayoff
+                    ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-primary-ink)]'
+                    : 'bg-ink-900 text-[var(--color-text-inverse)]',
+                )}
+              >
+                {index + 1}
+              </span>
+              {/* The icon repeats the step's subject; the numeral carries the order. */}
+              {step.icon ? (
+                <span aria-hidden="true" className="text-amber-700">
+                  {step.icon}
+                </span>
+              ) : null}
+            </div>
             <h3 className="mt-4 text-lg font-semibold text-[var(--color-text-primary)]">
               {step.title}
             </h3>
@@ -167,6 +227,39 @@ export function PublicMetric({
   );
 }
 
+/* --------------------------------------------------------- StatusBadge --- */
+
+export type ImprovementStatus = 'progress' | 'done' | 'measured';
+
+/**
+ * Where a location is in the improvement cycle.
+ *
+ * Three states and no fourth: in progress, carried out, measured. `measured` is
+ * the only one that may look like an achievement, because it is the only one
+ * backed by a second measurement.
+ *
+ * The label is passed in rather than held here, so the copy stays in the
+ * message catalogue and this component carries no Dutch.
+ */
+export function StatusBadge({ status, label }: { status: ImprovementStatus; label: string }) {
+  const tones: Record<ImprovementStatus, string> = {
+    progress: 'bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)]',
+    done: 'bg-[var(--color-info-soft)] text-[var(--color-info-text)]',
+    measured: 'bg-[var(--color-success-soft)] text-[var(--color-success-text)]',
+  };
+
+  return (
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold',
+        tones[status],
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 /* -------------------------------------------------------- LocationCard --- */
 
 function initialsOf(name: string): string {
@@ -192,6 +285,9 @@ export function LocationCard({
   change,
   date,
   href,
+  status,
+  statusLabel,
+  initials,
 }: {
   name: string;
   city?: string;
@@ -199,19 +295,25 @@ export function LocationCard({
   change: string;
   date?: string;
   href?: string;
+  status?: ImprovementStatus;
+  statusLabel?: string;
+  /** Overrides the derivation, which cannot know that "Restaurant De Haven" is "DH". */
+  initials?: string;
 }) {
   const content = (
     <>
       <div className="flex items-center gap-3">
         <span className="font-display grid size-10 shrink-0 place-items-center rounded-md bg-ink-800 text-sm font-extrabold text-cream-50">
-          {initialsOf(name)}
+          {initials ?? initialsOf(name)}
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-display text-base leading-tight font-bold text-[var(--color-text-primary)]">
             {name}
           </p>
           {city ? <p className="text-xs text-[var(--color-text-muted)]">{city}</p> : null}
         </div>
+        {/* No score and no star average on purpose: this grid is not a ranking. */}
+        {status && statusLabel ? <StatusBadge status={status} label={statusLabel} /> : null}
       </div>
       <p className="text-sm leading-[1.55] text-[var(--color-text-secondary)]">“{topic}”</p>
       <p className="text-sm leading-[1.55] text-[var(--color-text-primary)]">{change}</p>
@@ -245,30 +347,35 @@ export function LocationCard({
  * explains. It must also say what GeefSterren does *not* do: no independent
  * audit, no verification of every improvement.
  */
+export type TransparencyItem = string | { icon: ReactNode; text: string };
+
 export function TransparencyBlock({
   title,
   items,
   footer,
 }: {
   title: string;
-  items: string[];
+  items: ReadonlyArray<TransparencyItem>;
   footer?: ReactNode;
 }) {
   return (
     <div className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-surface-muted)] p-6">
       <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h3>
       <ul className="mt-3 flex flex-col gap-2">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="flex gap-2 text-sm leading-[1.55] text-[var(--color-text-secondary)]"
-          >
-            <span aria-hidden="true" className="text-[var(--color-text-muted)]">
-              •
-            </span>
-            {item}
-          </li>
-        ))}
+        {items.map((item) => {
+          const text = typeof item === 'string' ? item : item.text;
+          return (
+            <li
+              key={text}
+              className="flex gap-2.5 text-sm leading-[1.55] text-[var(--color-text-secondary)]"
+            >
+              <span aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--color-text-muted)]">
+                {typeof item === 'string' ? '\u2022' : item.icon}
+              </span>
+              {text}
+            </li>
+          );
+        })}
       </ul>
       {footer ? <div className="mt-4 text-sm">{footer}</div> : null}
     </div>
